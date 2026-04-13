@@ -167,6 +167,7 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
         dados = dados.replace(" ", "")
         dados = dados.replace("F", "f__", 1)
 
+    # ADICIONA DADOS DO SISTEMA PARA COMPARAR COM A NOTA
     print("TIPO DE NOTA:", tipo_nota)
     prompt += "\nNumero da nota para comparação: " + str(dados_de_comparacao[3]).strip()
     prompt += "\nTipo de nota para comparação: " + str(dados_de_comparacao[0]).strip()
@@ -177,10 +178,10 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
         dados = dados[:-3]
     else:
         dados = dados[:-2]
-
+    #DADOS FINAIS = CAMINHA DA NOTA NO SERVIDOR
     print("Dados finais para nota:", dados)
 
-    # TEMPORÁRIO (você pediu pra ignorar usuário/senha)
+    # ADICIONAR NO GERENCIADOR DO SISTEMA
     username = "comp_dalba"
     password = "CYtBXO6w"
 
@@ -280,18 +281,10 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
     print("PROMPT ENVIADO AO LLM")
     print("####################################")
     print(prompt)
-  
-    inicio_llm = time.time()
-    print("Início LLM:", datetime.now().strftime("%H:%M:%S"))
-
        
-   
     #dados_json = input("ENTRADA MANUAL DO JSON: ")
    
     dados_json = consulta_LLM(prompt)
-
-    fim_llm = time.time()
-    print(f"Tempo de execução do LLM: {fim_llm - inicio_llm:.2f} segundos")
 
     if dados_json is None:
         print("LLM retornou None.")

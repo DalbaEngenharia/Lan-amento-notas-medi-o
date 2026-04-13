@@ -9,14 +9,20 @@ import limpeza
 import time
 
 def LoopLancamentos(driver):
+    ##Loop lancamentos inicia o loop de controle por filiais
     log("===== INICIOU LOOP DE LANÇAMENTOS =====")
     LoopFilial = 0
+    #seta realizar filtro para True para realizar filtro apenas uma vez 
     realizar_filtro = True
+
+    # loop filial vai rodas sob a lista de filial garantindo todas as filials 
     while LoopFilial < len(filiais):
+        
         filial_atual = filiais[LoopFilial]
         log(f"--- INICIANDO PROCESSAMENTO DA FILIAL [{LoopFilial + 1}/{len(filiais)}]: {filial_atual} ---")
         lista_notas_lançadas = []
         lista_notas_nao_lancadas = []
+        #try para controle de erro
         try:
             log("Abrindo menu Documento...")
             funcao_tres_e_demais(driver, "wa-menu-item", "Documento", 0)
@@ -39,27 +45,20 @@ def LoopLancamentos(driver):
             except Exception as e:
                 log(f"Popup Fechar 1 não encontrado ou falhou: {e}")
 
-            # try:
-            #     log("Tentando confirmar popup intermediário...")
-            #     funcao_tres_e_demais(driver, "wa-button", "Confirmar", 0)
-            # except Exception as e:
-            #     log(f"Popup Confirmar não encontrado ou falhou: {e}")
-
-            # try:
-            #     log("Tentando fechar popup 2...")
-            #     funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
-            # except Exception as e:
-            #     log(f"Popup Fechar 2 não encontrado ou falhou: {e}")
+           
             ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
             time.sleep(5)
             print("#############################################################")
             retorno_teste = Scriptfind(driver, "wa-text-view", retorno=True)
             print(retorno_teste)
             print("#############################################################")
-
+            ## a implementar verificação de licenca; caso ter, fecha e tenta novamente após XX segundos(a definir)
+            
             log("Aguardando botão Classificar...")
             esperar_existir(driver, "wa-button", "Classificar")
             time.sleep(5)
+
+            #realiza filtro do sistema do protheus, para aperecer apenas as notas por lançamento
             if realizar_filtro: 
                 print("Filtro unico")
                 filtros = ["ROBO NOTAS (MEDICOES)", "Filtro de Programa"]
@@ -71,8 +70,7 @@ def LoopLancamentos(driver):
                 log("Aguardando painel 'Aguarde' desaparecer...")
                 esperar_sumir_panel(driver, "Aguarde", 60)
                 realizar_filtro = False
-
-
+            #verifica se existe nota na tabela, se não ter continua para a próxima filial
             try:
                 tabela = driver.find_element(By.ID, "COMP4513")
                 log("Tabela de lançamentos encontrada (COMP4513).")
@@ -87,8 +85,11 @@ def LoopLancamentos(driver):
 
             log(f"Iniciando varredura de notas da filial {filial_atual}...")
 
+            #inicia loop para lançar as notas
             while True:
+                
                 try:
+                    #encontra a tabela do protheus contendo as notas 
                     tabela = driver.find_element(By.ID, "COMP4513")
                     tabela_2 = expand_shadow(driver, tabela)
                     linhas = tabela_2.find_elements(By.CSS_SELECTOR, "tbody tr")
@@ -146,7 +147,7 @@ def LoopLancamentos(driver):
                             # assim mesmo que dê erro/cancelamento ela não repete
                             notas_processadas.add(chave_nota)
                             log(f"Nota marcada como processada preventivamente: {chave_nota}")
-
+                            #Realiza o clique 3x em calassificar garantindo o funcionamento
                             log("Clicando em Classificar (1)...")
                             funcao_tres_e_demais(driver, "wa-button", "Classificar", 0)
 
@@ -165,16 +166,17 @@ def LoopLancamentos(driver):
                             log("Aguardando botão 'Salvar' para iniciar lançamento...")
                             esperar_existir(driver, "wa-button", "Salvar")
 
+                            #Inicia a função de lançamento (em LancarNotas.py )
                             log(f"Iniciando função de lançamento da nota: {chave_nota}")
                             resultado, dados_lancados = lancamento(driver, dados, filial_atual)
-                            
+                            #se resultado for True (lancada) adiciona a lista_notas_lancadas para o relatorio
                             if resultado:
                                 log(f"Lançamento retornou TRUE para nota {chave_nota}. Aguardando estabilização de 60s...")
                                 lista_notas_lançadas.append(dados_lancados)
                                 print("NOTAS LANCADAS OK:", lista_notas_lançadas)
                                 time.sleep(60)
                                 log(f"Nota tratada com sucesso (salva/cancelada/etc): {chave_nota}")
-                                
+                            #Caso false (não lancada) adiciona a lista_notas_não_lancadas para o relatorio
                             else:
                                 lista_notas_nao_lancadas.append(dados_lancados)
                                 log(f"Lançamento retornou FALSE para nota {chave_nota}. Descendo para próxima na tabela após 60s...")
@@ -198,11 +200,11 @@ def LoopLancamentos(driver):
                         except Exception as e:
                             log(f"Erro ao processar linha {idx}: {e}")
                             continue
-
+                    #Verificação se tem nota nova a ser lançada
                     if not nota_nova_encontrada:
                         tentativas_sem_nota_nova += 1
                         log(f"Nenhuma nota nova encontrada. Tentativa {tentativas_sem_nota_nova}/{limite_tentativas_sem_nota_nova}")
-                        time.sleep(2)
+                        time.sleep(5)
 
                         if tentativas_sem_nota_nova >= limite_tentativas_sem_nota_nova:
                             log(f"Sem novas notas para processar na filial {filial_atual}. Indo para próxima filial.")

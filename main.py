@@ -38,7 +38,7 @@ driver = webdriver.Chrome(
 
 wait = WebDriverWait(driver, 20)
 
-# iniciar ambiente
+# iniciar ambiente e anda até o menu de movimentos
 iniciar_ambiente(homologacao, driver)
 log("INICIANDO AMBIENTE")
 confirmaBase(driver, wait)

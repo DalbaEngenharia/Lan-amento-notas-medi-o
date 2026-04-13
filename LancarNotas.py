@@ -34,7 +34,6 @@ def lancamento(driver, param, filial):
     dados_lancadas = []
 
     try:
-        data_minima = date.today() + timedelta(days=8)
 
         log("========================================")
         log("INÍCIO LANCAMENTO")
@@ -45,7 +44,7 @@ def lancamento(driver, param, filial):
 
         time.sleep(10)
         log("Aguardou 10 segundos antes de iniciar interação.")
-
+        #preciona ESC para garantir que nem uma caixa fique selecionada
         body = driver.find_element(By.TAG_NAME, "body")
         body.send_keys(Keys.ESCAPE)
         log("Enviado ESC para fechar possíveis modais/edições pendentes.")
@@ -55,7 +54,7 @@ def lancamento(driver, param, filial):
         # 1) LER DADOS DA NOTA DO COMPONENTE
         # ==========================================================
         log("Iniciando leitura do tipo de nota (COMP6019)...")
-
+        # pega dados da tela do sistema para fazer comparações com a nota
         dados_a_comparar = []
         tipo_nota = pegar_texto_input(driver, "COMP6019")
         dados_a_comparar.append(tipo_nota)
@@ -121,10 +120,12 @@ def lancamento(driver, param, filial):
         # 2) BUSCAR DADOS DA NOTA / REGRA DE IMPOSTO
         # ==========================================================
         log("Buscando dados da nota via encontrar_nota(...)")
-
+        
+        #encontar nota busca a nota no servidor (texto_notas.py)
         dados_nota = encontrar_nota(param[6], filial, dados_a_comparar)
         log(f"Retorno bruto de encontrar_nota: {dados_nota}")
 
+        #tratamento de notas que não foram encontradas ou não serão lançadas
         if dados_nota is None:
             log("Cancelando, erro ao consultar notas (retorno None)")
             cancelar_lancamento_de_nota(driver)
@@ -209,6 +210,7 @@ def lancamento(driver, param, filial):
             )
 
         else:
+            #se der tudo certo, inicia o lançamento da nota
             log("Nota não contém imposto. Prosseguindo com lançamento.")
             print("Não tem imposto")
 
@@ -239,7 +241,10 @@ def lancamento(driver, param, filial):
 
                 valores.append(valor_coluna_29)
                 print(f"Linha {i} | Coluna 29: {valor_coluna_29}")
-            
+            #Verifica AF (pedido) da nota com com sistema
+            # SE: iguais -> lancar nota
+            # SE: nota não ter -> lançar nota
+            # SE: nota ter, mas não for igual com a do sistema -> cancela o lançamento
             if dados_nota["AC"] == "null" or dados_nota["AC"] == None:
                 None
             elif dados_nota["AC"] in valores: 
@@ -251,6 +256,7 @@ def lancamento(driver, param, filial):
                     dados_lancadas, filial, fornecedor, dados_a_comparar[3], "AF não compativel"
                 )
 
+            #INICIA O PREENCHIMENTO DA TES EM TODAS AS LINHAS
             x = 0
             while x < len(linhas):
                 sucesso = False
