@@ -9,9 +9,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 homologacao = False
-teste = 0
+teste = 2
 chrome_options = Options()
-
+#teste: 
+# 0  = servidor
+# 1 = Protheus local
+# else = homologação
 if not homologacao and teste == 0: 
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--window-size=1920,1080")

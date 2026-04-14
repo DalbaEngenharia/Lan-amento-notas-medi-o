@@ -788,10 +788,9 @@ logfile_atual = None  # guarda o arquivo desta execução
 def log(msg):
     global logfile_atual
 
-    local = 0
-    if local == 1: 
+    try: 
         pasta_relatorio = r'C:\Users\gustavo.elicker\Desktop\REGISTROS\LOG'
-    else: 
+    except:
         pasta_relatorio = r"C:\Users\DALBAPY\Desktop\Nova pasta\REGISTRO\LOG"
 
     # Define o arquivo apenas uma vez por execução
@@ -836,10 +835,9 @@ def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas, filial
 
     global arquivo_relatorio_atual
 
-    local = 0
-    if local == 1:
+    try:
         pasta_relatorio = r'C:\Users\gustavo.elicker\Desktop\REGISTROS\RELATORIO'
-    else:
+    except:
         pasta_relatorio = r"C:\Users\DALBAPY\Desktop\Nova pasta\REGISTRO\RELATORIO"
 
     # cria a pasta se não existir
