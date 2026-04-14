@@ -1,4 +1,4 @@
 dist/
 build/
 main.spec
-__pycahce__/
+__pycache__/
