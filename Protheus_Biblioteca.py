@@ -788,10 +788,13 @@ logfile_atual = None  # guarda o arquivo desta execução
 def log(msg):
     global logfile_atual
 
-    try: 
-        pasta_relatorio = r'C:\Users\gustavo.elicker\Desktop\REGISTROS\LOG'
-    except:
-        pasta_relatorio = r"C:\Users\DALBAPY\Desktop\Nova pasta\REGISTRO\LOG"
+    caminho1 = r'C:\Users\gustavo.elicker\Desktop\REGISTROS\LOG'
+    caminho2 = r"C:\Users\DALBAPY\Desktop\Nova pasta\REGISTRO\LOG"
+
+    if os.path.exists(caminho1):
+        pasta_relatorio = caminho1
+    else:
+        pasta_relatorio = caminho2
 
     # Define o arquivo apenas uma vez por execução
     if logfile_atual is None:
@@ -837,11 +840,11 @@ def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas, filial
 
     try:
         pasta_relatorio = r'C:\Users\gustavo.elicker\Desktop\REGISTROS\RELATORIO'
+        os.makedirs(pasta_relatorio, exist_ok=True)
     except:
         pasta_relatorio = r"C:\Users\DALBAPY\Desktop\Nova pasta\REGISTRO\RELATORIO"
-
+        os.makedirs(pasta_relatorio, exist_ok=True)
     # cria a pasta se não existir
-    os.makedirs(pasta_relatorio, exist_ok=True)
 
     # Define o arquivo apenas uma vez por execução
     if arquivo_relatorio_atual is None:
