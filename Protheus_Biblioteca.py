@@ -838,13 +838,14 @@ def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas, filial
 
     global arquivo_relatorio_atual
 
-    caminho1 = r'C:\Users\gustavo.elicker\Desktop\REGISTROS\LOG'
-    caminho2 = r"C:\Users\DALBAPY\Desktop\Nova pasta\REGISTRO\LOG"
+    caminho1 = r'C:\Users\gustavo.elicker\Desktop\REGISTROS\RELATORIO'
+    caminho2 = r"C:\Users\DALBAPY\Desktop\Nova pasta\REGISTRO\RELATORIO"
 
     if os.path.exists(caminho1):
         pasta_relatorio = caminho1
     else:
         pasta_relatorio = caminho2
+    # cria a pasta se não existir
 
     # Define o arquivo apenas uma vez por execução
     if arquivo_relatorio_atual is None:

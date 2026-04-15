@@ -1,23 +1,29 @@
 from imports import *
 from Protheus_Biblioteca import *
 from LOOP import LoopLancamentos
+
+import os
 import time
+
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 
+# =========================
+# CONFIG
+# =========================
 homologacao = False
-teste = 0
+teste = 1
 
 chrome_options = Options()
 
 # =========================
-# PERFIL (REMOVE POPUPS DE VERDADE)
+# PERFIL (SEGURO PARA .EXE)
 # =========================
-chrome_options.add_argument(r"--user-data-dir=C:\selenium\perfil")
+profile_path = os.path.join(os.getcwd(), "chrome_profile")
+chrome_options.add_argument(f"--user-data-dir={profile_path}")
 
 # =========================
 # MODO EXECUÇÃO
@@ -32,10 +38,20 @@ elif not homologacao and teste == 1:
     credenciais = ["robo", "robo2025"]
 
 else:
+    chrome_options.add_argument("--start-maximized")
     credenciais = ["gustavo.elicker", "123abc"]
 
+
 # =========================
-# ESTABILIDADE
+# ESTABILIDADE (ESSENCIAL)
+# =========================
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--remote-debugging-port=9222")
+
+# =========================
+# CONFIG EXTRA
 # =========================
 chrome_options.add_argument("--disable-notifications")
 chrome_options.add_argument("--disable-popup-blocking")
@@ -43,33 +59,30 @@ chrome_options.add_argument("--disable-extensions")
 chrome_options.add_argument("--disable-infobars")
 chrome_options.add_argument("--ignore-certificate-errors")
 chrome_options.add_argument("--allow-insecure-localhost")
-
-# IMPORTANTE (remove prompt de câmera/microfone)
 chrome_options.add_argument("--use-fake-ui-for-media-stream")
 
-# Seu sistema interno
 chrome_options.add_argument(
     "--unsafely-treat-insecure-origin-as-secure=http://protheus.dalba.com.br:1239"
 )
 
 # =========================
-# PREFS (só o essencial)
+# PREFS
 # =========================
 prefs = {
     "profile.default_content_setting_values.notifications": 2
 }
-
 chrome_options.add_experimental_option("prefs", prefs)
 
-# =========================
-# DRIVER
-# =========================
-driver = webdriver.Chrome(
-    service=Service(ChromeDriverManager().install()),
-    options=chrome_options
-)
 
+# =========================
+# DRIVER (LOCAL!)
+# =========================
+# 👉 COLOQUE o chromedriver.exe na mesma pasta do .exe
+service = Service("chromedriver.exe")
+
+driver = webdriver.Chrome(service=service, options=chrome_options)
 wait = WebDriverWait(driver, 20)
+
 
 # =========================
 # INÍCIO DO FLUXO
