@@ -19,18 +19,20 @@ from selenium.webdriver.common.keys import Keys
 def iniciar_ambiente(inicio, driver): 
 
     if inicio: 
-        None
-        # link_site = "https://192.168.254.243:1235/webapp"
-        # driver.get(link_site)
-        # driver.find_element(By.XPATH, '//*[@id="details-button"]').click()
-        # time.sleep(0.5)
-        # driver.find_element(By.XPATH, '//*[@id="proceed-link"]').click()
-        # pg.keyDown("ctrl")
-        # pg.press("l")
-        # pg.keyUp("ctrl")        
-        # pg.press("left")
-        # pg.write("https://")
-        # pg.press("return")
+        link_site = "https://192.168.254.243:1235/webapp"
+        driver.get(link_site)
+        try:
+            driver.find_element(By.XPATH, '//*[@id="details-button"]').click()
+            time.sleep(0.5)
+            driver.find_element(By.XPATH, '//*[@id="proceed-link"]').click()
+        except: 
+            None
+        pg.keyDown("ctrl")
+        pg.press("l")
+        pg.keyUp("ctrl")        
+        pg.press("left")
+        pg.write("https://")
+        pg.press("return")
     else: 
         link_site = "https://protheus.dalba.com.br:1239/webapp/index.html"
         driver.get(link_site)
@@ -40,20 +42,44 @@ def expand_shadow(driver, element ):
     return driver.execute_script("return arguments[0].shadowRoot", element)
 
 #funcão para confirmar a entrada do banco de dados 
-def confirmaBase(driver, wait): 
-    time.sleep(5)
-    dialogs = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'wa-dialog')))
-    wa_dialog = dialogs[1]
-    shadow = expand_shadow(driver, wa_dialog)
+def confirmaBase(driver, wait):
+    import time
+    from selenium.common.exceptions import TimeoutException
 
-    footer = shadow.find_element(By.CSS_SELECTOR, 'footer')
-    buttons = footer.find_elements(By.CSS_SELECTOR, 'wa-button')
+    time.sleep(2)
 
-    shadow_btn = expand_shadow(driver,buttons[1])
-    btn = shadow_btn.find_element(By.CSS_SELECTOR, 'button')
-    btn.click()
-    #wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "wa-webview")))
-    time.sleep(1)
+    try:
+        wait.until(lambda d: d.execute_script("""
+            return document.querySelectorAll('wa-dialog').length > 0;
+        """))
+    except TimeoutException:
+        print("Nenhum wa-dialog apareceu.")
+        return
+
+    dialogs = driver.find_elements(By.CSS_SELECTOR, "wa-dialog")
+
+    print(f"Qtd dialogs encontrados: {len(dialogs)}")
+
+    for i, dialog in enumerate(dialogs):
+        try:
+            shadow = expand_shadow(driver, dialog)
+
+            footer = shadow.find_element(By.CSS_SELECTOR, "footer")
+            buttons = footer.find_elements(By.CSS_SELECTOR, "wa-button")
+
+            if len(buttons) > 1:
+                shadow_btn = expand_shadow(driver, buttons[1])
+                btn = shadow_btn.find_element(By.CSS_SELECTOR, "button")
+
+                print(f"Clicando botão do dialog {i}")
+                btn.click()
+                time.sleep(1)
+                return
+
+        except Exception as e:
+            print(f"Erro no dialog {i}: {e}")
+
+    print("Nenhum botão clicável encontrado no wa-dialog")
 
 #função de Login ( usuário )
 def login(driver, wait, credenciais):

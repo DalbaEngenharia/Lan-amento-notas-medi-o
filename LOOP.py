@@ -2,11 +2,11 @@ from lista import filiais
 from Protheus_Biblioteca import *
 from selenium.webdriver.common.keys import Keys
 from LancarNotas import lancamento
-from texto_notas import encontrar_nota
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import StaleElementReferenceException
 import limpeza
 import time
+import traceback
 
 def LoopLancamentos(driver):
     ##Loop lancamentos inicia o loop de controle por filiais
@@ -196,9 +196,13 @@ def LoopLancamentos(driver):
                         except StaleElementReferenceException:
                             log(f"Linha {idx} ficou stale. Tentando novamente na próxima varredura...")
                             continue
-
                         except Exception as e:
-                            log(f"Erro ao processar linha {idx}: {e}")
+                            log("===== ERRO AO PROCESSAR LINHA =====")
+                            log(f"Filial: {filial_atual}")
+                            log(f"Linha: {idx}")
+                            log(f"Tipo: {type(e).__name__}")
+                            log(f"Mensagem: {str(e)}")
+                            log(traceback.format_exc())
                             continue
                     #Verificação se tem nota nova a ser lançada
                     if not nota_nova_encontrada:
@@ -214,7 +218,12 @@ def LoopLancamentos(driver):
                         log("Nota nova foi processada nesta varredura. Resetando contador de tentativas sem nota nova.")
 
                 except Exception as e:
-                    log(f"Erro geral no loop da filial {filial_atual}: {e}")
+                    log("===== ERRO NO LOOP INTERNO =====")
+                    log(f"Filial: {filial_atual}")
+                    log(f"Tipo: {type(e).__name__}")
+                    log(f"Mensagem: {str(e)}")
+                    log(traceback.format_exc())
+
                     tentativas_sem_nota_nova += 1
                     time.sleep(2)
 
@@ -222,8 +231,34 @@ def LoopLancamentos(driver):
                         log(f"Muitas falhas seguidas na filial {filial_atual}. Indo para próxima filial.")
                         break
 
+                    if tentativas_sem_nota_nova >= limite_tentativas_sem_nota_nova:
+                        log(f"Muitas falhas seguidas na filial {filial_atual}. Indo para próxima filial.")
+                        break
+
         except Exception as e:
-            log(f"ERRO CRÍTICO AO PROCESSAR FILIAL {filial_atual}: {e}")
+            log("===== ERRO CRÍTICO NA FILIAL =====")
+            log(f"Filial: {filial_atual}")
+            log(f"Tipo do erro: {type(e).__name__}")
+            log(f"Mensagem: {str(e)}")
+
+            erro_completo = traceback.format_exc()
+            log("Stacktrace completo:")
+            log(erro_completo)
+
+            try:
+                screenshot_path = f"erro_filial_{filial_atual}.png"
+                driver.save_screenshot(screenshot_path)
+                log(f"Screenshot salva em: {screenshot_path}")
+            except Exception as err:
+                log(f"Falha ao salvar screenshot: {err}")
+
+            try:
+                html_path = f"erro_filial_{filial_atual}.html"
+                with open(html_path, "w", encoding="utf-8") as f:
+                    f.write(driver.page_source)
+                log(f"HTML salvo em: {html_path}")
+            except Exception as err:
+                log(f"Falha ao salvar HTML: {err}")
 
         log(f"--- FINALIZANDO FILIAL: {filial_atual} ---")
         log("ATUALIZANDO RELATORIO....")

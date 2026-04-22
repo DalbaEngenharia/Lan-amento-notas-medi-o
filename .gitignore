@@ -2,3 +2,8 @@ dist/
 build/
 main.spec
 __pycache__/
+chrome_profile/
+chromedriver.exe
+Lancamentos/__pycache__
+chromedriver
+venv/

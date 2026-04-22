@@ -3,6 +3,7 @@ from Protheus_Biblioteca import *
 from LOOP import LoopLancamentos
 
 import os
+import sys
 import time
 
 from selenium import webdriver
@@ -10,19 +11,32 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 
+# =========================
+# CORREÇÃO CRÍTICA (AGENDADOR)
+# =========================
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+os.chdir(base_dir)
+
+# DEBUG (pode remover depois)
+with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
+    f.write(f"Rodando em: {os.getcwd()}")
 
 # =========================
 # CONFIG
 # =========================
 homologacao = False
-teste = 1
+teste = 0
 
 chrome_options = Options()
 
 # =========================
-# PERFIL (SEGURO PARA .EXE)
+# PERFIL (CORRIGIDO)
 # =========================
-profile_path = os.path.join(os.getcwd(), "chrome_profile")
+profile_path = os.path.join(base_dir, "chrome_profile")
 chrome_options.add_argument(f"--user-data-dir={profile_path}")
 
 # =========================
@@ -41,9 +55,8 @@ else:
     chrome_options.add_argument("--start-maximized")
     credenciais = ["gustavo.elicker", "123abc"]
 
-
 # =========================
-# ESTABILIDADE (ESSENCIAL)
+# ESTABILIDADE
 # =========================
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
@@ -73,16 +86,14 @@ prefs = {
 }
 chrome_options.add_experimental_option("prefs", prefs)
 
-
 # =========================
-# DRIVER (LOCAL!)
+# DRIVER (CORRIGIDO)
 # =========================
-# 👉 COLOQUE o chromedriver.exe na mesma pasta do .exe
-service = Service("chromedriver.exe")
+driver_path = os.path.join(base_dir, "chromedriver.exe")
+service = Service(driver_path)
 
 driver = webdriver.Chrome(service=service, options=chrome_options)
 wait = WebDriverWait(driver, 20)
-
 
 # =========================
 # INÍCIO DO FLUXO
@@ -106,3 +117,6 @@ funcao_tres_e_demais(driver, "wa-menu-item", "Movimentos", 0)
 
 LoopLancamentos(driver)
 log("ENTRANDO EM LOOP LANÇAMENTOS")
+
+driver.quit()
+log("FINALIZADO")
