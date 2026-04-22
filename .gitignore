@@ -7,3 +7,4 @@ chromedriver.exe
 Lancamentos/__pycache__
 chromedriver
 venv/
+debug.path.txt
