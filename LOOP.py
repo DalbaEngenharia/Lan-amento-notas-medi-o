@@ -1,4 +1,4 @@
-from lista import filiais
+from Listas.lista import filiais
 from Protheus_Biblioteca import *
 from selenium.webdriver.common.keys import Keys
 from LancarNotas import lancamento

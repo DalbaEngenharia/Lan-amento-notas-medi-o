@@ -1,10 +1,7 @@
-import pdfplumber
-from teste import consulta_LLM
-from smb.SMBConnection import SMBConnection
-from lista import ESPEC, TES
-import time
-from datetime import datetime
-import os
+from .consulta_llm.consulta_llm import consulta_LLM
+from .notas_cte import *
+from .consultar_notas.consultar_notas_pdf import consultar_notas_pdf_no_servidor
+from Listas.lista import ESPEC, TES  # esse fica absoluto porque está fora
 import json
 
 texto = """Você é um sistema de extração de dados de documentos fiscais brasileiros.
@@ -98,51 +95,23 @@ def conferir_serie_e_especie(caminho):
         return False
     return True
 
-def extrair_pdf(caminho):
-    texto_pdf = ""
-    try:
-        with pdfplumber.open(caminho) as pdf:
-            for i, pagina in enumerate(pdf.pages, start=1):
-                conteudo = pagina.extract_text()
-                if conteudo:
-                    texto_pdf += conteudo + "\n"
-                else:
-                    print(f"[PDF] Página {i} sem texto extraível (pode ser PDF escaneado/imagem).")
-    except Exception as e:
-        print(f"[PDF] Erro ao abrir/extrair {caminho}: {e}")
-    return texto_pdf
-
-def baixar_arquivo_smb(conn, service_name, remote_path, local_path, timeout=20):
-    """
-    Faz download do arquivo SMB com logs.
-    """
-    try:
-        print(f"[SMB] Iniciando download: {remote_path}")
-        inicio = time.time()
-
-        with open(local_path, "wb") as f:
-            # timeout aqui ajuda a não ficar pendurado eternamente
-            conn.retrieveFile(service_name, remote_path, f, timeout=timeout)
-
-        fim = time.time()
-        tamanho = os.path.getsize(local_path) if os.path.exists(local_path) else 0
-        print(f"[SMB] Download concluído em {fim - inicio:.2f}s | {tamanho} bytes")
-        return True
-
-    except Exception as e:
-        print(f"[SMB] Erro no download de {remote_path}: {e}")
-        return False
-
 def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
-
+    tipo_nota = None
     print("Dados de comparação recebidos:", dados_de_comparacao)
 
-    inicio_total = time.time()
     prompt = texto
 
     # identifica se vai ser CTE
+    print(len(dados))
     if len(dados) > 30:
         print("CTE:", dados)
+        tipo_nota = ESPEC[3]
+        #realizar desenvolvimento de lancar notas via CTE
+        #montagem de caminho
+        aaaaa = encontrar_notas_CTE()
+        print(aaaaa)
+        return aaaaa
+    #######################################    
     if conferir_serie_e_especie(dados):    
         print("Dados para nota:", dados)
         print("====================")
@@ -151,14 +120,15 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
         print("====================")
     else: 
         return "Serie errada"
-
+    #######################################
     # pega o tipo de nota e a TES
-    tipo_nota = None
-    for x in ESPEC:
-        if x in dados:
-            print("ESPEC:", x, "TES:", TES[x])
-            tipo_nota = x
-            break
+    if tipo_nota != ESPEC[3]:
+        tipo_nota = None
+        for x in ESPEC:
+            if x in dados:
+                print("ESPEC:", x, "TES:", TES[x])
+                tipo_nota = x
+                break
 
     if tipo_nota is None:
         tipo_nota = ESPEC[4]
@@ -166,105 +136,24 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
     if "NF" in dados:
         dados = dados.replace(" ", "")
         dados = dados.replace("F", "f__", 1)
+    if "NFS" in dados:
+        dados = dados[:-3]
+    else:
+        dados = dados[:-2]
 
     # ADICIONA DADOS DO SISTEMA PARA COMPARAR COM A NOTA
+    #######################################
+    #######################################
     print("TIPO DE NOTA:", tipo_nota)
     prompt += "\nNumero da nota para comparação: " + str(dados_de_comparacao[3]).strip()
     prompt += "\nTipo de nota para comparação: " + str(dados_de_comparacao[0]).strip()
     prompt += "\nData de emissão para comparação: " + str(dados_de_comparacao[1]).strip()
     prompt += "\nValor bruto para comparação: " + str(dados_de_comparacao[2]).strip()
 
-    if "NFS" in dados:
-        dados = dados[:-3]
-    else:
-        dados = dados[:-2]
     #DADOS FINAIS = CAMINHA DA NOTA NO SERVIDOR
     print("Dados finais para nota:", dados)
 
-    # ADICIONAR NO GERENCIADOR DO SISTEMA
-    username = "comp_dalba"
-    password = "CYtBXO6w"
-
-    conn = SMBConnection(
-        username,
-        password,
-        "python_client",
-        "10.40.58.4",
-        use_ntlm_v2=True,
-        is_direct_tcp=True
-    )
-
-    try:
-        print("[SMB] Conectando...")
-        conectado = conn.connect("10.40.58.4", 445, timeout=10)
-        if not conectado:
-            print("[SMB] Não foi possível conectar ao SMB.")
-            return None
-        print("[SMB] Conectado com sucesso.")
-    except Exception as e:
-        print(f"[SMB] Erro ao conectar: {e}")
-        return None
-
-    caminho = f"/sf1010_{filial}"
-    caminho_nota = f"{caminho}/{dados}"
-
-    print(f"[SMB] Caminho base: {caminho}")
-    print(f"[SMB] Caminho da nota: {caminho_nota}")
-
-    try:
-        arquivos_nota = conn.listPath("custom", caminho_nota)
-        print(f"[SMB] {len(arquivos_nota)} itens encontrados na pasta.")
-    except Exception as e:
-        print(f"[SMB] Erro ao listar pasta SMB: {e}")
-        conn.close()
-        return None
-
-    texto_final = ""
-    pdfs_encontrados = 0
-
-    for a in arquivos_nota:
-        # ignora . e ..
-        if a.filename in [".", ".."]:
-            continue
-
-        if a.filename.lower().endswith(".pdf"):
-            pdfs_encontrados += 1
-            print(f"\n[PDF] Arquivo dentro da nota: {a.filename}")
-            print(f"[PDF] Tamanho informado pelo SMB: {getattr(a, 'file_size', 'desconhecido')} bytes")
-
-            remote = f"{caminho_nota}/{a.filename}"
-            local = f"temp_{a.filename}"
-
-            try:
-                ok = baixar_arquivo_smb(conn, "custom", remote, local, timeout=20)
-                if not ok:
-                    print(f"[PDF] Pulando arquivo por falha no download: {a.filename}")
-                    continue
-
-                if not os.path.exists(local) or os.path.getsize(local) == 0:
-                    print(f"[PDF] Arquivo local vazio ou inexistente: {local}")
-                    continue
-
-                texto_nota = extrair_pdf(local)
-
-                if texto_nota.strip():
-                    print(f"[PDF] Texto extraído com sucesso ({len(texto_nota)} chars)")
-                    texto_final += texto_nota + "\n"
-                else:
-                    print(f"[PDF] Nenhum texto extraído de {a.filename} (provável PDF imagem).")
-
-            except Exception as e:
-                print(f"[PDF] Erro ao processar PDF {a.filename}: {e}")
-
-            finally:
-                if os.path.exists(local):
-                    try:
-                        os.remove(local)
-                    except Exception as e:
-                        print(f"[TEMP] Não foi possível remover {local}: {e}")
-
-    conn.close()
-    print("[SMB] Conexão encerrada.")
+    pdfs_encontrados, texto_final = consultar_notas_pdf_no_servidor(filial, dados)
 
     if pdfs_encontrados == 0:
         print("Nenhum PDF encontrado dentro da pasta da nota.")
@@ -281,9 +170,7 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
     print("PROMPT ENVIADO AO LLM")
     print("####################################")
     print(prompt)
-       
-    #dados_json = input("ENTRADA MANUAL DO JSON: ")
-   
+          
     dados_json = consulta_LLM(prompt)
 
     if dados_json is None:
@@ -299,10 +186,9 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
     print("JSON convertido:")
     print(dados_json)
 
-    fim_total = time.time()
-    print(f"Tempo total do processo: {fim_total - inicio_total:.2f} segundos")
 
     return dados_json
-
-# encontrar_nota('000131127|001|017154|01|NF', "030201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
+#                   chave da nota;                              filial   [          dados para comparação              ]
+# encontrar_nota('41260410300672000176550010000009201727280014', "030201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
+encontrar_nota('000001071|F|037101|01|NFS', "030201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
 

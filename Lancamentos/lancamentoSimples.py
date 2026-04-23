@@ -1,6 +1,6 @@
 from Protheus_Biblioteca import *
-from lista import TES, ESPEC, natureza
-from texto_notas import encontrar_nota
+from Listas.lista import TES, ESPEC, natureza
+from verificar_notas.texto_notas import encontrar_nota
 import traceback
 import json
 import ast
