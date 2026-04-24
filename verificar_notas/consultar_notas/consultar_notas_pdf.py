@@ -44,7 +44,7 @@ def baixar_arquivo_smb(conn, service_name, remote_path, local_path, timeout=20):
         return False
 
 
-def consultar_notas_pdf_no_servidor(filial, dados):
+def consultar_notas_pdf_no_servidor( filial, dados):
     username = "comp_dalba"
     password = "CYtBXO6w"
 

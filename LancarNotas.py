@@ -123,7 +123,9 @@ def lancamento(driver, param, filial):
         log("Buscando dados da nota via encontrar_nota(...)")
         
         #encontar nota busca a nota no servidor (texto_notas.py)
-        dados_nota = encontrar_nota(param[6], filial, dados_a_comparar)
+        caminho_nota_servidor = param[0]+param[1]+param[2]+param[4]
+        print(caminho_nota_servidor)
+        dados_nota = encontrar_nota(caminho_nota_servidor, param[7], filial, dados_a_comparar)
 
         log(f"Retorno bruto de encontrar_nota: {dados_nota}")
 

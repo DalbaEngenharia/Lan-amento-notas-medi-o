@@ -95,51 +95,23 @@ def conferir_serie_e_especie(caminho):
         return False
     return True
 
-def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
+def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, teste=False):
     tipo_nota = None
     print("Dados de comparação recebidos:", dados_de_comparacao)
 
     prompt = texto
 
     # identifica se vai ser CTE
-    print(len(dados))
-    if len(dados) > 30:
-        print("CTE:", dados)
-        tipo_nota = ESPEC[3]
-        #realizar desenvolvimento de lancar notas via CTE
-        #montagem de caminho
-        aaaaa = encontrar_notas_CTE()
-        print(aaaaa)
-        return aaaaa
+    print(len(chave))
+    if len(chave) > 30:
+        None
     #######################################    
-    if conferir_serie_e_especie(dados):    
-        print("Dados para nota:", dados)
-        print("====================")
-        dados = dados.replace("|", "")
-        print("Dados para nota ajustado:", dados)
-        print("====================")
+    if conferir_serie_e_especie(chave):    
+       None
     else: 
         return "Serie errada"
     #######################################
     # pega o tipo de nota e a TES
-    if tipo_nota != ESPEC[3]:
-        tipo_nota = None
-        for x in ESPEC:
-            if x in dados:
-                print("ESPEC:", x, "TES:", TES[x])
-                tipo_nota = x
-                break
-
-    if tipo_nota is None:
-        tipo_nota = ESPEC[4]
-
-    if "NF" in dados:
-        dados = dados.replace(" ", "")
-        dados = dados.replace("F", "f__", 1)
-    if "NFS" in dados:
-        dados = dados[:-3]
-    else:
-        dados = dados[:-2]
 
     # ADICIONA DADOS DO SISTEMA PARA COMPARAR COM A NOTA
     #######################################
@@ -151,9 +123,9 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
     prompt += "\nValor bruto para comparação: " + str(dados_de_comparacao[2]).strip()
 
     #DADOS FINAIS = CAMINHA DA NOTA NO SERVIDOR
-    print("Dados finais para nota:", dados)
+    print("Dados finais para nota:", caminho_nota_servidor)
 
-    pdfs_encontrados, texto_final = consultar_notas_pdf_no_servidor(filial, dados)
+    pdfs_encontrados, texto_final = consultar_notas_pdf_no_servidor(filial, caminho_nota_servidor)
 
     if pdfs_encontrados == 0:
         print("Nenhum PDF encontrado dentro da pasta da nota.")
@@ -188,7 +160,3 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
 
 
     return dados_json
-#                   chave da nota;                                filial;  [          dados para comparação              ]
-# encontrar_nota('41260410300672000176550010000009201727280014', "030201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
-# encontrar_nota('000002342|001|052426|01|CF', "040201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
-
