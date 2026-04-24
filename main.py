@@ -110,7 +110,6 @@ wait = WebDriverWait(driver, 20)
 log("INICIANDO AMBIENTE")
 iniciar_ambiente(homologacao, driver)
 
-
 log("CONFIRMANDO BASE")
 confirmaBase(driver, wait)
 
