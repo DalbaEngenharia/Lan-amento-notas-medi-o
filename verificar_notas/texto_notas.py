@@ -70,7 +70,7 @@ Regras de validação com dados de comparação:
 
 Compare todos os dados extraídos com os dados fornecidos pelo sistema (CNPJ, número da nota completo, data de emissão, valor total, tipo de documento).
 Qualquer divergência relevante deve retornar:
-{"erro":"True","motivo":"Divergencia entre os dados fornecidos pelo sistema e os dados da nota."}
+{"erro":"True","motivo": informar motivo especifico }
 
 Regras de prioridade na extração:
 

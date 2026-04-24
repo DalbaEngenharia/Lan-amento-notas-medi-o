@@ -107,25 +107,27 @@ wait = WebDriverWait(driver, 20)
 # =========================
 # INÍCIO DO FLUXO
 # =========================
-iniciar_ambiente(homologacao, driver)
 log("INICIANDO AMBIENTE")
+iniciar_ambiente(homologacao, driver)
 
-confirmaBase(driver, wait)
+
 log("CONFIRMANDO BASE")
+confirmaBase(driver, wait)
 
-login(driver, wait, credenciais)
 log("REALIZANDO LOGIN")
+login(driver, wait, credenciais)
 
-sel_ambiente(driver, wait, "2", homologacao)
 log("ENTRANDO EM ATUALIZAÇÕES")
+sel_ambiente(driver, wait, "2", homologacao)
 
-funcao_tres_e_demais(driver, "wa-menu-item", "Atualizações", 0)
 log("ENTRANDO EM MOVIMENTOS")
+funcao_tres_e_demais(driver, "wa-menu-item", "Atualizações", 0)
 
 funcao_tres_e_demais(driver, "wa-menu-item", "Movimentos", 0)
 
-LoopLancamentos(driver)
 log("ENTRANDO EM LOOP LANÇAMENTOS")
+LoopLancamentos(driver)
 
+log("FINALIZANDO")
 driver.quit()
 log("FINALIZADO")
