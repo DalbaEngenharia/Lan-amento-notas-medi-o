@@ -4,12 +4,14 @@ from LOOP import LoopLancamentos
 
 import os
 import sys
-import time
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
+
+# NOVO (auto driver)
+from webdriver_manager.chrome import ChromeDriverManager
 
 # =========================
 # CORREÇÃO CRÍTICA (AGENDADOR)
@@ -34,7 +36,7 @@ teste = 1
 chrome_options = Options()
 
 # =========================
-# PERFIL (CORRIGIDO)
+# PERFIL
 # =========================
 profile_path = os.path.join(base_dir, "chrome_profile")
 chrome_options.add_argument(f"--user-data-dir={profile_path}")
@@ -87,10 +89,17 @@ prefs = {
 chrome_options.add_experimental_option("prefs", prefs)
 
 # =========================
-# DRIVER (CORRIGIDO)
+# DRIVER (AUTO + FALLBACK)
 # =========================
-driver_path = os.path.join(base_dir, "chromedriver.exe")
-service = Service(driver_path)
+try:
+    # tenta baixar automaticamente
+    service = Service(ChromeDriverManager().install())
+except Exception as e:
+    print("Erro ao baixar driver automático:", e)
+    print("Usando driver local...")
+
+    driver_path = os.path.join(base_dir, "chromedriver.exe")
+    service = Service(driver_path)
 
 driver = webdriver.Chrome(service=service, options=chrome_options)
 wait = WebDriverWait(driver, 20)

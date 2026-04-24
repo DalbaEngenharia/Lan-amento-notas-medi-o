@@ -15,6 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import InvalidElementStateException
 from selenium.webdriver.common.keys import Keys
+
 #iniciar ambiente (homologação ou principal)
 def iniciar_ambiente(inicio, driver): 
 
@@ -37,7 +38,7 @@ def iniciar_ambiente(inicio, driver):
         link_site = "https://protheus.dalba.com.br:1239/webapp/index.html"
         driver.get(link_site)
         
-#função para entrar nos shadow ( open )
+#função para entrar nos shadow (open)
 def expand_shadow(driver, element ):
     return driver.execute_script("return arguments[0].shadowRoot", element)
 

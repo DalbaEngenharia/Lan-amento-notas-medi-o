@@ -188,7 +188,7 @@ def encontrar_nota(dados, filial, dados_de_comparacao, teste=False):
 
 
     return dados_json
-#                   chave da nota;                              filial   [          dados para comparação              ]
+#                   chave da nota;                                filial;  [          dados para comparação              ]
 # encontrar_nota('41260410300672000176550010000009201727280014', "030201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
-encontrar_nota('000001071|F|037101|01|NFS', "030201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
+# encontrar_nota('000002342|001|052426|01|CF', "040201", ['CF   ', '06/02/2026', '4500.00', '000001000'])
 
