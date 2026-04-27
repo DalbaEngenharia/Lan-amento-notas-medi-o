@@ -123,6 +123,12 @@ def lancamento(driver, param, filial):
         log("Buscando dados da nota via encontrar_nota(...)")
         
         #encontar nota busca a nota no servidor (texto_notas.py)
+        if param[1] == "F":
+            param[1] = "f__"
+        elif param[1].startswith("F"):
+            param[1] = param[1].lower() + "_"
+
+
         caminho_nota_servidor = param[0]+param[1]+param[2]+param[4]
         print(caminho_nota_servidor)
         dados_nota = encontrar_nota(caminho_nota_servidor, param[7], filial, dados_a_comparar)
@@ -215,7 +221,9 @@ def lancamento(driver, param, filial):
 
         else:
             lancamentoSimples.lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3])
-
+        print("1 minuto de espera")
+        log("Aguardaddando um minuto para continuar")
+        time.sleep(60)
   
     except Exception as e:
         log("===== ERRO INESPERADO NO LANCAMENTO =====")
