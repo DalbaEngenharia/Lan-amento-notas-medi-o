@@ -24,35 +24,48 @@ def LoopLancamentos(driver):
         lista_notas_nao_lancadas = []
         #try para controle de erro
         try:
-            log("Abrindo menu Documento...")
-            funcao_tres_e_demais(driver, "wa-menu-item", "Documento", 0)
+            while True: #gerencia mensagem licensa TOTVS
+                log("Abrindo menu Documento...")
+                funcao_tres_e_demais(driver, "wa-menu-item", "Documento", 0)
 
-            log(f"Inserindo filial no campo COMP4512: {filial_atual}")
-            inserir_texto(driver, "COMP4512", filial_atual)
-            campo = driver.find_element(By.ID, "COMP4512")
-            campo.send_keys(Keys.ENTER)
+                log(f"Inserindo filial no campo COMP4512: {filial_atual}")
+                inserir_texto(driver, "COMP4512", filial_atual)
+                campo = driver.find_element(By.ID, "COMP4512")
+                campo.send_keys(Keys.ENTER)
 
-            log("Clicando em Confirmar para acessar financeiro...")
-            funcao_tres_e_demais(driver, "wa-button", "Confirmar", 0)
+                log("Clicando em Confirmar para acessar financeiro...")
+                funcao_tres_e_demais(driver, "wa-button", "Confirmar", 0)
 
-            # TELA DE FINANCEIRO
-            log("Aguardando tela de financeiro...")
-            esperar_existir(driver, "wa-button", "Fechar")
+                # TELA DE FINANCEIRO
+                log("Aguardando tela de financeiro...")
+                esperar_existir(driver, "wa-button", "Fechar")
 
-            try:
-                log("Tentando fechar popup 1...")
-                funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
-            except Exception as e:
-                log(f"Popup Fechar 1 não encontrado ou falhou: {e}")
+                try:
+                    log("Tentando fechar popup 1...")
+                    funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
+                except Exception as e:
+                    log(f"Popup Fechar 1 não encontrado ou falhou: {e}")
 
-           
-            ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
-            time.sleep(5)
-            print("#############################################################")
-            retorno_teste = Scriptfind(driver, "wa-text-view", retorno=True)
-            print(retorno_teste)
-            print("#############################################################")
-            ## a implementar verificação de licenca; caso ter, fecha e tenta novamente após XX segundos(a definir)
+            
+                ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
+                time.sleep(10)
+                print("#############################################################")
+                
+                retorno_teste = Scriptfind(driver, "wa-text-view", retorno=True)
+                texto_tela = str(retorno_teste).lower()
+                if "excedeu numero de licenças" in texto_tela or "aguarde para utilizar" in texto_tela:
+                    print("Excedeu licença, aguradando...")
+                    log("Excedeu licença, aguradando...")
+                    try: 
+                        print("Clicando em fechar mensagem licenças")
+                        log("Clicando em fechar mensagem licenças")
+                        funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
+                        time.sleep(30)
+                    except: 
+                        print("Licenças OK")
+                        break
+
+                  
             
             log("Aguardando botão Classificar...")
             esperar_existir(driver, "wa-button", "Classificar")
