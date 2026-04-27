@@ -31,7 +31,7 @@ with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
 # CONFIG
 # =========================
 homologacao = False
-teste = 1
+teste = 0
 
 chrome_options = Options()
 
