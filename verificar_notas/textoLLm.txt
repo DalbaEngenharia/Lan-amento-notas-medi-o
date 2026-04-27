@@ -63,7 +63,6 @@ valor_impostos deve ser sempre formatado com 2 casas decimais.
 Regras de validação com dados de comparação:
 
 Compare todos os dados extraídos com os dados fornecidos pelo sistema (CNPJ, número da nota completo, data de emissão, valor total, tipo de documento).
-Se valor total do sistema for MAIOR que o total da nota, se o valor total do sistema <= nota, continue
 Qualquer divergência relevante deve retornar:
 {"erro":"True","motivo": informar motivo especifico }
 
