@@ -1,4 +1,4 @@
-from lista import filiais
+from Listas.lista import filiais
 from Protheus_Biblioteca import *
 from selenium.webdriver.common.keys import Keys
 from LancarNotas import lancamento
@@ -133,13 +133,14 @@ def LoopLancamentos(driver):
                             log(f"Nova nota encontrada para processamento: {chave_nota}")
 
                             dados = []
-                            dados.append(linha_dados[1])   # N° nota
-                            dados.append(linha_dados[2])   # série
-                            dados.append(linha_dados[3])   # fornecedor
-                            dados.append(linha_dados[7])   # cnpj
-                            dados.append(linha_dados[9])   # data emissão
-                            dados.append(linha_dados[10])  # valor
-                            dados.append(linha_dados[13])  # chave
+                            dados.append(linha_dados[1])    # N° nota
+                            dados.append(linha_dados[2])    # série
+                            dados.append(linha_dados[3])    # fornecedor
+                            dados.append(linha_dados[7])    # cnpj
+                            dados.append(linha_dados[4])    # loja
+                            dados.append(linha_dados[9])    # data emissão
+                            dados.append(linha_dados[10])   # valor
+                            dados.append(linha_dados[13])   # chave
 
                             log(f"Dados extraídos da nota: {dados}")
 
