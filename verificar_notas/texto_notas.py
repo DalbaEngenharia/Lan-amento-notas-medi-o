@@ -4,7 +4,7 @@ from .consultar_notas.consultar_notas_pdf import consultar_notas_pdf_no_servidor
 from Listas.lista import ESPEC, TES  # esse fica absoluto porque está fora
 import json
 
-with open("textoLLm.txt", "r", encoding="utf-8") as arquivo:
+with open("verificar_notas/textoLLm.txt", "r", encoding="utf-8") as arquivo:    
     texto = arquivo.read()
 
 def conferir_serie_e_especie(caminho):

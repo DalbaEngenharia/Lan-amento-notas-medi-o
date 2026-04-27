@@ -29,7 +29,7 @@ Se houver divergência, retorne:
 
 Número da nota:
 
-Extraia apenas o número principal do documento, ignorando zeros à esquerda e ignorando série, DPS, RPS, chave de acesso, protocolo ou outros números.
+Extraia apenas o número principal do documento, ignorando zeros à esquerda (00000XXXX e XXXX são o mesmo) e ignorando série, DPS, RPS, chave de acesso, protocolo ou outros números.
 Compare o número filtrado do documento diretamente com o número completo informado pelo sistema, se o numero da nota for "xx/yyyy" considerar apenas "xx"
 Se "xx" filtrado não coincidir exatamente, retorne imediatamente:(ex: 27 e sistema 272026)
 {"erro":"True","motivo":informe o motivo}
@@ -63,6 +63,7 @@ valor_impostos deve ser sempre formatado com 2 casas decimais.
 Regras de validação com dados de comparação:
 
 Compare todos os dados extraídos com os dados fornecidos pelo sistema (CNPJ, número da nota completo, data de emissão, valor total, tipo de documento).
+Se valor total do sistema for MAIOR que o total da nota, se o valor total do sistema <= nota, continue
 Qualquer divergência relevante deve retornar:
 {"erro":"True","motivo": informar motivo especifico }
 
