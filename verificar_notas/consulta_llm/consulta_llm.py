@@ -3,7 +3,7 @@ import time
 import google.genai as genai
 from Protheus_Biblioteca import log
 
-def consulta_LLM(texto, max_tentativas=5):
+def consulta_LLM(texto):
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
@@ -12,9 +12,13 @@ def consulta_LLM(texto, max_tentativas=5):
 
     client = genai.Client(api_key=api_key)
 
-    for tentativa in range(1, max_tentativas + 1):
+    tentativa = 0
+
+    while True:
+        tentativa += 1
+
         try:
-            log(f"[LLM] Tentativa {tentativa}/{max_tentativas}...")
+            log(f"[LLM] Tentativa {tentativa}...")
 
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
@@ -58,14 +62,6 @@ def consulta_LLM(texto, max_tentativas=5):
             if not erro_transitorio:
                 log("[LLM] Erro não transitório. Abortando sem retry.")
                 return None
-
-            if tentativa == max_tentativas:
-                log("[LLM] Máximo de tentativas atingido. Abortando.")
-                return None
-
-            # ⏱️ ESPERA FIXA DE 2 MINUTOS
-            espera = 120
-            log(f"[LLM] Erro transitório. Aguardando {espera}s (2 minutos) para retry...")
+            espera = 30
+            log(f"[LLM] Erro transitório. Aguardando {espera}s para retry...")
             time.sleep(espera)
-
-    return None

@@ -2,6 +2,7 @@ from Protheus_Biblioteca import *
 from Listas.lista import TES, ESPEC, natureza
 from verificar_notas.texto_notas import encontrar_nota
 from Lancamentos import lancamentoSimples
+from Lancamentos.relatorio import * 
 import json
 import ast
 import traceback
@@ -12,23 +13,6 @@ def to_bool(valor):
     if valor is None:
         return False
     return str(valor).strip().lower() in ["true", "1", "sim", "yes"]
-
-
-def montar_retorno_nao_lancada(dados_lancadas, filial, fornecedor, nota, motivo):
-    dados_lancadas.append("STATUS: NAO_LANCADA")
-    dados_lancadas.append("FILIAL: " + str(filial))
-    dados_lancadas.append("FORNECEDOR: " + str(fornecedor))
-    dados_lancadas.append("NOTA: " + str(nota))
-    dados_lancadas.append("MOTIVO: " + str(motivo))
-    return False, dados_lancadas
-
-
-def montar_retorno_lancada(dados_lancadas, filial, fornecedor, nota):
-    dados_lancadas.append("STATUS: LANCADA")
-    dados_lancadas.append("FILIAL: " + str(filial))
-    dados_lancadas.append("FORNECEDOR: " + str(fornecedor))
-    dados_lancadas.append("NOTA: " + str(nota))
-    return True, dados_lancadas
 
 
 def lancamento(driver, param, filial):
@@ -220,7 +204,9 @@ def lancamento(driver, param, filial):
             )
 
         else:
-            lancamentoSimples.lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3])
+            teste = lancamentoSimples.lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3])
+            print (teste)
+            return teste
         print("1 minuto de espera")
         log("Aguardaddando um minuto para continuar")
         time.sleep(60)

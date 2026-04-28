@@ -312,9 +312,10 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
-        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
-        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
+        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        cancelar_lancamento_de_nota(driver)
 
         time.sleep(5)
         Scriptfind(driver, "wa-button")
@@ -324,15 +325,12 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
             funcao_tres_e_demais(driver, "wa-button", "OK")
         except Exception:
             pass
-
-        retorno = montar_retorno_lancada(
-            dados_lancadas, filial, fornecedor, dados_a_comparar
-        )
-
         print("DADOS NOTA LANÇADA:", dados_lancadas)
         log("Lançamento finalizado com retorno TRUE.")
+        return montar_retorno_lancada(
+            dados_lancadas, filial, fornecedor, dados_a_comparar
+        )        
 
-        return retorno
     except Exception as e:
         log("===== ERRO NO LANCAMENTO SIMPLES =====")
         log(f"Filial: {filial}")
