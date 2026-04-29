@@ -4,7 +4,7 @@ from LOOP import LoopLancamentos
 
 import os
 import sys
-
+from datetime import date
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -13,6 +13,28 @@ from selenium.webdriver.support.ui import WebDriverWait
 # NOVO (auto driver)
 from webdriver_manager.chrome import ChromeDriverManager
 
+hoje = date.today()
+
+print("Hoje:", hoje)
+
+if hoje.day == 1:
+    print("iniciar com data retroativa")
+    dia = hoje.day - 1
+    mes = hoje.month - 1
+    ano = hoje.year
+    # se janeiro, volta para dezembro do ano anterior
+    if mes == 0:
+        mes = 12
+        ano -= 1
+    nova_data = date(ano, mes, dia)
+    print("Mês anterior:", nova_data)
+    print("Mês anterior ajustado:", nova_data.strftime("%d%m%Y"))
+    DataRetroativa =  nova_data.strftime("%d%m%Y")
+    print("Data retroativa: ", DataRetroativa)
+    DataRetroativaBool = True
+else:
+    print("segue normal")
+    
 # =========================
 # CORREÇÃO CRÍTICA (AGENDADOR)
 # =========================
@@ -116,12 +138,13 @@ confirmaBase(driver, wait)
 log("REALIZANDO LOGIN")
 login(driver, wait, credenciais)
 
-log("ENTRANDO EM ATUALIZAÇÕES")
-sel_ambiente(driver, wait, "2", homologacao)
+log("SELECIONANDO AMBIENTE 02")
+sel_ambiente(driver, wait, "2", homologacao, DataRetroativaBool, DataRetroativa)
 
-log("ENTRANDO EM MOVIMENTOS")
+log("ENTRANDO EM ATUALIZAÇÕES")
 funcao_tres_e_demais(driver, "wa-menu-item", "Atualizações", 0)
 
+log("ENTRANDO EM MOVIMENTOS")
 funcao_tres_e_demais(driver, "wa-menu-item", "Movimentos", 0)
 
 log("ENTRANDO EM LOOP LANÇAMENTOS")

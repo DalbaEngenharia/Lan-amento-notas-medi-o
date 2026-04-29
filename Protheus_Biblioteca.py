@@ -133,7 +133,7 @@ def login(driver, wait, credenciais):
     driver.switch_to.default_content()
 
 #função de seleção do ambiente 
-def sel_ambiente(driver, wait, amb,homologacao):
+def sel_ambiente(driver, wait, amb,homologacao, retroativa=False, Data=None):
     time.sleep(10)
     try:
         # Espera o shadow DOM
@@ -151,7 +151,27 @@ def sel_ambiente(driver, wait, amb,homologacao):
         inputs_button = WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, "po-lookup-button"))
         )
+        print("Quantidade de inputs:", len(inputs))
 
+        time.sleep(5)
+
+        # Se retroativa, preencher data
+        if retroativa and Data:
+            todos_inputs = driver.find_elements(By.TAG_NAME, "input")
+
+            for i, campo in enumerate(todos_inputs):
+                try:
+                    valor = campo.get_attribute("value")
+                    tipo = campo.get_attribute("type")
+
+                    if tipo == "text":
+                        campo.clear()
+                        campo.send_keys(Data)
+                        print("Data preenchida:", Data)
+                        break
+
+                except:
+                    pass
         input_amb = inputs[2]
 
         # Espera o input ficar clicável antes de interagir
