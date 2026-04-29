@@ -312,10 +312,10 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        # esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        cancelar_lancamento_de_nota(driver)
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # cancelar_lancamento_de_nota(driver)
 
         time.sleep(5)
         Scriptfind(driver, "wa-button")
