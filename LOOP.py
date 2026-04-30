@@ -60,7 +60,7 @@ def LoopLancamentos(driver):
                         print("Clicando em fechar mensagem licenças")
                         log("Clicando em fechar mensagem licenças")
                         funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
-                        time.sleep(30)
+                        time.sleep(15)
                     except: 
                         print("Licenças OK")
                         break
