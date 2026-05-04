@@ -71,16 +71,19 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
                     log(f"Inserindo TES '{tes}' na linha {x}")
                     inserir_na_tabela_shadow(driver, "COMP6022", 7, tes, linha_index=x, enter=True)
                     log(f"Comando de inserção executado para linha {x}")
+
+
                 except Exception as e:
                     log(f"Erro ao inserir TES na linha {x} da COMP6022: {e}")
                     print(f"Erro ao inserir TES na linha {x}: {e}")
 
                 time.sleep(2)
-
+    
                 # recarrega a tabela após edição
                 tabela = driver.find_element(By.ID, "COMP6022")
                 tabela_2 = expand_shadow(driver, tabela)
                 linhas = tabela_2.find_elements(By.CSS_SELECTOR, "tbody tr")
+                inserir_texto(driver, "COMP6019", tipo_nota, enter=True)
 
                 if x >= len(linhas):
                     log(f"[COMP6022] Linha {x} não existe mais após recarregar tabela.")
@@ -318,11 +321,18 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
         # cancelar_lancamento_de_nota(driver)
 
         time.sleep(5)
-        Scriptfind(driver, "wa-button")
+        Scriptfind(driver, "wa-button",retorno=True )
         time.sleep(5)
 
         try:
-            funcao_tres_e_demais(driver, "wa-button", "OK")
+            host = driver.find_element(By.ID, "COMP7512")
+
+            shadow_root = driver.execute_script(
+                "return arguments[0].shadowRoot", host
+            )
+            btn = shadow_root.find_element(By.CSS_SELECTOR, "button")
+
+            driver.execute_script("arguments[0].click();", btn)
         except Exception:
             pass
         print("DADOS NOTA LANÇADA:", dados_lancadas)

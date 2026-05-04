@@ -1,7 +1,5 @@
-from imports import *
 from Protheus_Biblioteca import *
 from LOOP import LoopLancamentos
-
 import os
 import sys
 from datetime import date
@@ -17,6 +15,7 @@ hoje = date.today()
 
 print("Hoje:", hoje)
 
+#verifica data retroativa
 if hoje.day == 1:
     print("iniciar com data retroativa")
     dia = hoje.day - 1
@@ -33,6 +32,8 @@ if hoje.day == 1:
     print("Data retroativa: ", DataRetroativa)
     DataRetroativaBool = True
 else:
+    DataRetroativaBool = None
+    DataRetroativa = None
     print("segue normal")
     
 # =========================
@@ -52,7 +53,7 @@ with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
 # =========================
 # CONFIG
 # =========================
-homologacao = False
+homologacao = True
 teste = 1
 
 chrome_options = Options()
@@ -113,27 +114,34 @@ chrome_options.add_experimental_option("prefs", prefs)
 # =========================
 # DRIVER (AUTO + FALLBACK)
 # =========================
-try:
-    # tenta baixar automaticamente
-    service = Service(ChromeDriverManager().install())
-except Exception as e:
-    print("Erro ao baixar driver automático:", e)
-    print("Usando driver local...")
+while True: 
+    try:
+        # tenta baixar automaticamente
+        service = Service(ChromeDriverManager().install())
+    except Exception as e:
+        print("Erro ao baixar driver automático:", e)
+        print("Usando driver local...")
 
-    driver_path = os.path.join(base_dir, "chromedriver.exe")
-    service = Service(driver_path)
+        driver_path = os.path.join(base_dir, "chromedriver.exe")
+        service = Service(driver_path)
 
-driver = webdriver.Chrome(service=service, options=chrome_options)
-wait = WebDriverWait(driver, 20)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    wait = WebDriverWait(driver, 20)
 
 # =========================
 # INÍCIO DO FLUXO
 # =========================
-log("INICIANDO AMBIENTE")
-iniciar_ambiente(homologacao, driver)
 
-log("CONFIRMANDO BASE")
-confirmaBase(driver, wait)
+
+    log("INICIANDO AMBIENTE")
+    iniciar_ambiente(homologacao, driver)
+
+    log("CONFIRMANDO BASE")
+    if confirmaBase(driver, wait):
+        break
+    else:    
+        driver.quit()
+        time.sleep(2)
 
 log("REALIZANDO LOGIN")
 login(driver, wait, credenciais)
