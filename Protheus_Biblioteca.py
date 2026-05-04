@@ -1,4 +1,3 @@
-from imports import *
 import pyautogui as pg 
 import time
 import os
@@ -22,12 +21,14 @@ def iniciar_ambiente(inicio, driver):
     if inicio: 
         link_site = "https://192.168.254.243:1235/webapp"
         driver.get(link_site)
+        time.sleep(2)
         try:
             driver.find_element(By.XPATH, '//*[@id="details-button"]').click()
             time.sleep(0.5)
             driver.find_element(By.XPATH, '//*[@id="proceed-link"]').click()
         except: 
             None
+    
         pg.keyDown("ctrl")
         pg.press("l")
         pg.keyUp("ctrl")        
@@ -54,8 +55,9 @@ def confirmaBase(driver, wait):
             return document.querySelectorAll('wa-dialog').length > 0;
         """))
     except TimeoutException:
+        
         print("Nenhum wa-dialog apareceu.")
-        return
+        return False
 
     dialogs = driver.find_elements(By.CSS_SELECTOR, "wa-dialog")
 
@@ -75,7 +77,7 @@ def confirmaBase(driver, wait):
                 print(f"Clicando botão do dialog {i}")
                 btn.click()
                 time.sleep(1)
-                return
+                return True
 
         except Exception as e:
             print(f"Erro no dialog {i}: {e}")
@@ -133,7 +135,7 @@ def login(driver, wait, credenciais):
     driver.switch_to.default_content()
 
 #função de seleção do ambiente 
-def sel_ambiente(driver, wait, amb,homologacao):
+def sel_ambiente(driver, wait, amb,homologacao, retroativa=False, Data=None):
     time.sleep(10)
     try:
         # Espera o shadow DOM
@@ -151,7 +153,27 @@ def sel_ambiente(driver, wait, amb,homologacao):
         inputs_button = WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.CLASS_NAME, "po-lookup-button"))
         )
+        print("Quantidade de inputs:", len(inputs))
 
+        time.sleep(5)
+
+        # Se retroativa, preencher data
+        if retroativa and Data:
+            todos_inputs = driver.find_elements(By.TAG_NAME, "input")
+
+            for i, campo in enumerate(todos_inputs):
+                try:
+                    valor = campo.get_attribute("value")
+                    tipo = campo.get_attribute("type")
+
+                    if tipo == "text":
+                        campo.clear()
+                        campo.send_keys(Data)
+                        print("Data preenchida:", Data)
+                        break
+
+                except:
+                    pass
         input_amb = inputs[2]
 
         # Espera o input ficar clicável antes de interagir
@@ -680,10 +702,11 @@ def clicar_aba(driver, id_botao, timeout=10):
 
 
 def marcar_filtro(driver, filtros):
+    print("==========FILTRO 1==========")
 
     botao = driver.find_element(By.CSS_SELECTOR, 'wa-button[caption="Filtrar"]')
 
-    # abre o painel
+    # abre painel
     driver.execute_script("""
         const host = arguments[0];
         const btn = host.shadowRoot?.querySelector('button');
@@ -693,47 +716,78 @@ def marcar_filtro(driver, filtros):
     esperar_existir(driver, "wa-button", "Aplicar")
     time.sleep(1)
 
-    # desmarca todos via clique real no label
-    driver.execute_script("""
-        document.querySelectorAll('wa-checkbox').forEach(host => {
-            const input = host.shadowRoot?.querySelector('input[type="checkbox"]');
-            const label = host.shadowRoot?.querySelector('label');
+    # ==================================================
+    # PASSO 1 -> desmarca todos
+    # ==================================================
+    for _ in range(20):
 
-            if (input && input.checked && label) {
-                label.click();
-            }
-        });
-    """)
+        todos = driver.find_elements(By.CSS_SELECTOR, "wa-checkbox")
+        alterou = False
 
-    time.sleep(1)
+        for checkbox in todos:
 
-    # marca os filtros desejados via clique real no label
+            marcado = driver.execute_script("""
+                const host = arguments[0];
+                const input = host.shadowRoot?.querySelector('input[type="checkbox"]');
+                return input ? input.checked : false;
+            """, checkbox)
+
+            caption = checkbox.get_attribute("caption")
+            #print("Filtro:", caption, "Marcado:", marcado)
+
+            if marcado:
+
+                driver.execute_script("""
+                    const host = arguments[0];
+                    const label = host.shadowRoot?.querySelector('label');
+                    if (label) label.click();
+                """, checkbox)
+
+                time.sleep(0.5)
+                alterou = True
+                break
+
+        if not alterou:
+            break
+
+    # ==================================================
+    # PASSO 2 -> marcar filtros desejados
+    # ==================================================
+    print("==========FILTRO 2==========")
+
     for filtro in filtros:
+
         checkbox = driver.find_element(
             By.CSS_SELECTOR,
             f'wa-checkbox[caption="{filtro}"]'
         )
 
+        # força click real no host + label + input
         driver.execute_script("""
             const host = arguments[0];
+
             const input = host.shadowRoot?.querySelector('input[type="checkbox"]');
             const label = host.shadowRoot?.querySelector('label');
 
-            if (input && !input.checked && label) {
-                label.click();
+            if (label) label.click();
+
+            if (input && !input.checked) {
+                input.click();
+                input.checked = true;
+                input.dispatchEvent(new Event('change', { bubbles:true }));
+                input.dispatchEvent(new Event('input', { bubbles:true }));
             }
         """, checkbox)
 
-        time.sleep(0.5)
+        time.sleep(0.8)
 
-        # debug: confirma se realmente ficou marcado
         marcado = driver.execute_script("""
             const host = arguments[0];
             const input = host.shadowRoot?.querySelector('input[type="checkbox"]');
-            return input ? input.checked : null;
+            return input ? input.checked : false;
         """, checkbox)
 
-        print(f"Filtro '{filtro}' marcado? {marcado}")
+        #print(f"{filtro} marcado? {marcado}")
 
     time.sleep(1)
 
@@ -855,7 +909,7 @@ def log(msg):
 arquivo_relatorio_atual = None
 
 
-def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas, filial_atual):
+def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas,  sem_notas_para_lançar, filial_atual):
     """
     Gera relatório consolidado para o cliente:
     - 1 arquivo por execução
@@ -918,57 +972,62 @@ def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas, filial
 
     with open(arquivo_relatorio_atual, "a", encoding="utf-8") as f:
         # Título centralizado
+        separacao = "___________________________________________________________________"
         titulo = f"RELATÓRIO DE NOTAS FISCAIS - FILIAL {filial_titulo}"
         print(titulo.center(largura))
-        f.write(titulo.center(largura) + "\n\n")
+        f.write(separacao + "\n" + titulo.center(largura) + "\n\n")
 
         # LANÇADAS
-        titulo_lancadas = "LANÇADAS"
-        print(titulo_lancadas.center(largura))
-        f.write(titulo_lancadas.center(largura) + "\n")
+        if sem_notas_para_lançar:
+            linha = "Filal não conteve notas para lançar no momento da execução"
+            f.write(linha+"\n\n") 
+        else: 
+            titulo_lancadas = "LANÇADAS"
+            print(titulo_lancadas.center(largura))
+            f.write(titulo_lancadas.center(largura) + "\n")
 
-        if lista_notas_lancadas:
-            for nota in lista_notas_lancadas:
-                filial = extrair_campo(nota, "FILIAL")
-                fornecedor = extrair_campo(nota, "FORNECEDOR", None)
-                numero_nota = extrair_campo(nota, "NOTA")
+            if lista_notas_lancadas:
+                for nota in lista_notas_lancadas:
+                    filial = extrair_campo(nota, "FILIAL")
+                    fornecedor = extrair_campo(nota, "FORNECEDOR", None)
+                    numero_nota = extrair_campo(nota, "NOTA")
 
-                if fornecedor:
-                    linha = f"{filial} - {numero_nota} - {fornecedor}"
-                else:
-                    linha = f"{filial} - {numero_nota}"
+                    if fornecedor:
+                        linha = f"{filial} - {numero_nota} - {fornecedor}"
+                    else:
+                        linha = f"{filial} - {numero_nota}"
 
-                print(linha)
-                f.write(linha + "\n")
-        else:
-            print("Nenhuma nota lançada")
-            f.write("Nenhuma nota lançada\n")
+                    print(linha)
+                    f.write(linha + "\n")
+            else:
+                print("Nenhuma nota lançada")
+                f.write("Nenhuma nota lançada\n")
 
-        f.write("\n")
+            f.write("\n")
 
-        # NÃO LANÇADAS
-        titulo_nao_lancadas = "NÃO LANÇADAS"
-        print(titulo_nao_lancadas.center(largura))
-        f.write(titulo_nao_lancadas.center(largura) + "\n")
+            # NÃO LANÇADAS
+            titulo_nao_lancadas = "NÃO LANÇADAS"
+            print(titulo_nao_lancadas.center(largura))
+            f.write(titulo_nao_lancadas.center(largura) + "\n")
 
-        if lista_notas_nao_lancadas:
-            for nota in lista_notas_nao_lancadas:
-                filial = extrair_campo(nota, "FILIAL")
-                fornecedor = extrair_campo(nota, "FORNECEDOR", None)
-                numero_nota = extrair_campo(nota, "NOTA")
-                motivo = extrair_campo(nota, "MOTIVO", "Motivo não informado")
+            if lista_notas_nao_lancadas:
+                for nota in lista_notas_nao_lancadas:
+                    filial = extrair_campo(nota, "FILIAL")
+                    fornecedor = extrair_campo(nota, "FORNECEDOR", None)
+                    numero_nota = extrair_campo(nota, "NOTA")
+                    motivo = extrair_campo(nota, "MOTIVO", "Motivo não informado")
 
-                if fornecedor:
-                    linha = f"{filial} - FORNECEDOR: {fornecedor} - NOTA: {numero_nota} - {motivo}"
-                else:
-                    linha = f"{filial} - {numero_nota} - {motivo}"
+                    if fornecedor:
+                        linha = f"{filial} - FORNECEDOR: {fornecedor} - NOTA: {numero_nota} - {motivo}"
+                    else:
+                        linha = f"{filial} - {numero_nota} - {motivo}"
 
-                print(linha)
-                f.write(linha + "\n")
-        else:
-            print("Nenhuma nota não lançada")
-            f.write("Nenhuma nota não lançada\n")
+                    print(linha)
+                    f.write(linha + "\n")
+            else:
+                print("Nenhuma nota não lançada")
+                f.write("Nenhuma nota não lançada\n")
 
-        f.write("\n" + "=" * largura + "\n\n")
+            f.write("\n" + "=" * largura + "\n\n")
 
     print("\nRelatório salvo em:", arquivo_relatorio_atual)

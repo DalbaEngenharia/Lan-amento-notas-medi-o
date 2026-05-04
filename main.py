@@ -1,10 +1,8 @@
-from imports import *
 from Protheus_Biblioteca import *
 from LOOP import LoopLancamentos
-
 import os
 import sys
-
+from datetime import date
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -13,6 +11,31 @@ from selenium.webdriver.support.ui import WebDriverWait
 # NOVO (auto driver)
 from webdriver_manager.chrome import ChromeDriverManager
 
+hoje = date.today()
+
+print("Hoje:", hoje)
+
+#verifica data retroativa
+if hoje.day == 1:
+    print("iniciar com data retroativa")
+    dia = hoje.day - 1
+    mes = hoje.month - 1
+    ano = hoje.year
+    # se janeiro, volta para dezembro do ano anterior
+    if mes == 0:
+        mes = 12
+        ano -= 1
+    nova_data = date(ano, mes, dia)
+    print("Mês anterior:", nova_data)
+    print("Mês anterior ajustado:", nova_data.strftime("%d%m%Y"))
+    DataRetroativa =  nova_data.strftime("%d%m%Y")
+    print("Data retroativa: ", DataRetroativa)
+    DataRetroativaBool = True
+else:
+    DataRetroativaBool = None
+    DataRetroativa = None
+    print("segue normal")
+    
 # =========================
 # CORREÇÃO CRÍTICA (AGENDADOR)
 # =========================
@@ -31,7 +54,7 @@ with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
 # CONFIG
 # =========================
 homologacao = False
-teste = 1
+teste = 0
 
 chrome_options = Options()
 
@@ -91,37 +114,45 @@ chrome_options.add_experimental_option("prefs", prefs)
 # =========================
 # DRIVER (AUTO + FALLBACK)
 # =========================
-try:
-    # tenta baixar automaticamente
-    service = Service(ChromeDriverManager().install())
-except Exception as e:
-    print("Erro ao baixar driver automático:", e)
-    print("Usando driver local...")
+while True: 
+    try:
+        # tenta baixar automaticamente
+        service = Service(ChromeDriverManager().install())
+    except Exception as e:
+        print("Erro ao baixar driver automático:", e)
+        print("Usando driver local...")
 
-    driver_path = os.path.join(base_dir, "chromedriver.exe")
-    service = Service(driver_path)
+        driver_path = os.path.join(base_dir, "chromedriver.exe")
+        service = Service(driver_path)
 
-driver = webdriver.Chrome(service=service, options=chrome_options)
-wait = WebDriverWait(driver, 20)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    wait = WebDriverWait(driver, 20)
 
 # =========================
 # INÍCIO DO FLUXO
 # =========================
-log("INICIANDO AMBIENTE")
-iniciar_ambiente(homologacao, driver)
 
-log("CONFIRMANDO BASE")
-confirmaBase(driver, wait)
+
+    log("INICIANDO AMBIENTE")
+    iniciar_ambiente(homologacao, driver)
+
+    log("CONFIRMANDO BASE")
+    if confirmaBase(driver, wait):
+        break
+    else:    
+        driver.quit()
+        time.sleep(2)
 
 log("REALIZANDO LOGIN")
 login(driver, wait, credenciais)
 
-log("ENTRANDO EM ATUALIZAÇÕES")
-sel_ambiente(driver, wait, "2", homologacao)
+log("SELECIONANDO AMBIENTE 02")
+sel_ambiente(driver, wait, "2", homologacao, DataRetroativaBool, DataRetroativa)
 
-log("ENTRANDO EM MOVIMENTOS")
+log("ENTRANDO EM ATUALIZAÇÕES")
 funcao_tres_e_demais(driver, "wa-menu-item", "Atualizações", 0)
 
+log("ENTRANDO EM MOVIMENTOS")
 funcao_tres_e_demais(driver, "wa-menu-item", "Movimentos", 0)
 
 log("ENTRANDO EM LOOP LANÇAMENTOS")
