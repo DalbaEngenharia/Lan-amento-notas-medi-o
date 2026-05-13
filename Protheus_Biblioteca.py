@@ -1,6 +1,5 @@
 import pyautogui as pg 
 import time
-import os
 from datetime import datetime, date, timedelta
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -203,72 +202,6 @@ def sel_ambiente(driver, wait, amb,homologacao, retroativa=False, Data=None):
 
 ################################################################################
 ################################################################################ def Scriptfind(driver, item):
-def Scriptfind(driver, item, retorno=False):
-    script = """
-        const selector = arguments[0];
-
-        function findAllDeep(root, selector, results = []) {
-            if (!root) return results;
-
-            // procura nesse nível
-            const found = root.querySelectorAll(selector);
-            found.forEach(el => results.push(el));
-
-            // percorre todos os nós para entrar em shadow roots aninhados
-            const all = root.querySelectorAll('*');
-            for (const node of all) {
-                if (node.shadowRoot) {
-                    findAllDeep(node.shadowRoot, selector, results);
-                }
-            }
-
-            return results;
-        }
-
-        const elements = findAllDeep(document, selector);
-
-        return elements.map(el => {
-            return {
-                tag: el.tagName.toLowerCase(),
-                id: el.id || "",
-                class: el.className || "",
-                caption: (
-                    el.getAttribute("caption") ||
-                    (el.shadowRoot && el.shadowRoot.innerText) ||
-                    el.innerText ||
-                    el.textContent ||
-                    ""
-                ).trim(),
-                value: el.value || ""
-            };
-        });
-    """
-
-    elementos = driver.execute_script(script, item)
-
-    if not elementos:
-        print(f"Nenhum elemento encontrado para: {item}")
-        return None if retorno else []
-
-    for i, s in enumerate(elementos):
-        print(
-            f"[{i}] tag: {s['tag']}, id: {s['id']}, class: {s['class']}, "
-            f"caption: {s['caption']}, value: {s['value']}"
-        )
-
-    # Se pediu retorno, devolve o dado mais útil do primeiro elemento
-    if retorno:
-        primeiro = elementos[0]
-
-        # prioridade: value -> caption -> dicionário completo
-        if primeiro["value"]:
-            return primeiro["value"]
-        elif primeiro["caption"] and primeiro["caption"] != "?":
-            return primeiro["caption"]
-        else:
-            return primeiro  # fallback se quiser inspecionar
-
-    return elementos
 
 def pegar_valor_shadow(driver, host_id, target_id):
     script = """
@@ -383,7 +316,7 @@ def clicar_BTN(driver, id):
     botao.click()
 
 #junção das 3 funções a cima
-def funcao_tres_e_demais(driver, item, nome, qnt):
+def funcao_tres_e_demais(driver, item, nome, qnt=0, ):
     nome_normalizado = nome.replace("\xa0", " ")
 
     time.sleep(5)
@@ -1031,3 +964,68 @@ def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas,  sem_n
             f.write("\n" + "=" * largura + "\n\n")
 
     print("\nRelatório salvo em:", arquivo_relatorio_atual)
+def Scriptfind(driver, item, retorno=False, tipo=None):
+    script = """
+        const selector = arguments[0];
+
+        function findAllDeep(root, selector, results = []) {
+            if (!root) return results;
+
+            const found = root.querySelectorAll(selector);
+            found.forEach(el => results.push(el));
+
+            const all = root.querySelectorAll('*');
+
+            for (const node of all) {
+                if (node.shadowRoot) {
+                    findAllDeep(node.shadowRoot, selector, results);
+                }
+            }
+
+            return results;
+        }
+
+        const elements = findAllDeep(document, selector);
+
+        return elements.map(el => {
+            return {
+                tag: el.tagName.toLowerCase(),
+                id: el.id || "",
+                class: el.className || "",
+                caption: (
+                    el.getAttribute("caption") ||
+                    (el.shadowRoot && el.shadowRoot.innerText) ||
+                    el.innerText ||
+                    el.textContent ||
+                    ""
+                ).trim(),
+                value: el.value || ""
+            };
+        });
+    """
+
+    elementos = driver.execute_script(script, item)
+
+    if not elementos:
+        print(f"Nenhum elemento encontrado para: {item}")
+        return None if retorno else []
+
+    for i, s in enumerate(elementos):
+        print(
+            f"[{i}] tag: {s['tag']}, id: {s['id']}, class: {s['class']}, "
+            f"caption: {s['caption']}, value: {s['value']}"
+        )
+
+    if retorno:
+        primeiro = elementos[0]
+
+        if tipo == "value":
+            return primeiro["value"]
+
+        elif tipo == "caption":
+            return primeiro["caption"]
+
+        else:
+            return primeiro
+
+    return elementos
