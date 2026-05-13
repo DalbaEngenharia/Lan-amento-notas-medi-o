@@ -60,36 +60,49 @@ def LoopLancamentos(driver):
 
             
                 ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
-                time.sleep(10)
+                time.sleep(20)
                 print("#############################################################")
                 
-                retorno_teste = Scriptfind(driver, "wa-text-view", retorno=True)
-                texto_tela = str(retorno_teste).lower()
-                print("####################")
-                print(texto_tela)
-                if "excedeu numero de licenças" in texto_tela or "Moedas" in texto_tela:
-                    
-                    print("Excedeu licença, aguradando...")
-                    log("Excedeu licença, aguradando...")
-                    try: 
-                        try: 
-                            funcao_tres_e_demais(driver, "wa-button", "Cancelar", 0)
-                            print("Clicou em fechar mensagem Moedas")
-                            log("Clicou em fechar mensagem Moedas")
-                            time.sleep(30)
-                        except: 
-                            try: 
-                                funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
-                                print("Clicou em fechar mensagem licenças")
-                                log("Clicou em fechar mensagem licenças")
-                                time.sleep(30)
-                            except: 
-                                print("Licenças OK")
-                                break
-                    except: 
-                        print("Licenças OK")
-                        break
-                else: 
+                textos_pop_ups = Scriptfind(driver, "wa-text-view", retorno=True, tipo="caption")
+                texto = textos_pop_ups.lower()
+
+                tem_licenca = "excedeu numero de licenças" in texto
+                tem_moedas = "moedas" in texto
+
+                if tem_licenca:
+                    print("Licença excedida detectada")
+                    log("Licença excedida detectada")
+
+                    try:
+                        funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
+                        print("Clicou em fechar mensagem de licença")
+                        log("Clicou em fechar mensagem de licença")
+                        time.sleep(30)
+                    except Exception as e:
+                        print(f"Erro ao fechar licença: {e}")
+
+                    # continua o loop (não dá break)
+                    continue
+
+
+                elif tem_moedas:
+                    print("Popup de Moedas detectado")
+                    log("Popup de Moedas detectado")
+
+                    try:
+                        funcao_tres_e_demais(driver, "wa-button", "Confirmar", 0)
+                        print("Clicou em Cancelar (Moedas)")
+                        log("Clicou em Cancelar (Moedas)")
+                        time.sleep(5)
+                    except Exception as e:
+                        print(f"Erro ao fechar Moedas: {e}")
+
+                    # moedas não é erro → pode sair do loop
+                    break
+
+
+                else:
+                    print("Nenhum popup detectado")
                     break
             
             time.sleep(5)
@@ -188,7 +201,7 @@ def LoopLancamentos(driver):
                                 log(f"Nova nota encontrada para processamento: {chave_nota}")
 
                                 dados = []
-                                dados.append(linha_dados[1])    # N° nota
+                                dados.append(linha_dados[1])    # N° nota 
                                 dados.append(linha_dados[2])    # série
                                 dados.append(linha_dados[3])    # fornecedor
                                 dados.append(linha_dados[7])    # cnpj
@@ -211,13 +224,14 @@ def LoopLancamentos(driver):
 
                                 log("Clicando em Classificar (3)...")
                                 funcao_tres_e_demais(driver, "wa-button", "Classificar", 0)
+                                try: 
+                                    log("Aguardando popup de confirmação com botão 'Não'...")
+                                    esperar_existir(driver, "wa-button", "Não")
 
-                                log("Aguardando popup de confirmação com botão 'Não'...")
-                                esperar_existir(driver, "wa-button", "Não")
-
-                                log("Clicando em 'Não'...")
-                                funcao_tres_e_demais(driver, "wa-button", "Não", 0)
-
+                                    log("Clicando em 'Não'...")
+                                    funcao_tres_e_demais(driver, "wa-button", "Não", 0)
+                                except: 
+                                    None
                                 log("Aguardando botão 'Salvar' para iniciar lançamento...")
                                 esperar_existir(driver, "wa-button", "Salvar")
 
@@ -238,7 +252,6 @@ def LoopLancamentos(driver):
                 
                                     time.sleep(60)
                                     continue
-                                    log("Movimentação para próxima nota na tabela executada.")
 
                                 time.sleep(3)
                                 log("Pausa de 3s após processamento da nota concluída.")

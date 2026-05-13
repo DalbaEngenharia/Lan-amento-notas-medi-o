@@ -1,7 +1,7 @@
 from Protheus_Biblioteca import *
 from Listas.lista import TES, ESPEC, natureza
 from verificar_notas.texto_notas import encontrar_nota
-from Lancamentos import lancamentoSimples
+from Lancamentos import lancamentoBase
 from Lancamentos.relatorio import * 
 import json
 import ast
@@ -57,25 +57,25 @@ def lancamento(driver, param, filial):
         dados_a_comparar.append(data_emitida)
         log(f"Data emitida lida em COMP6014: {data_emitida}")
 
-        resultado = Scriptfind(driver, "#COMP6051")
+        resultado = Scriptfind(driver, "#COMP6051",retorno=True,tipo="value")
         if resultado:
-            valor_bruto = resultado[0].get("value")
+            valor_bruto = resultado
             log(f"Valor bruto encontrado em COMP6051: {valor_bruto}")
         else:
             valor_bruto = None
             log("Valor bruto não encontrado em COMP6051. Definido como None.")
 
-        resultado = Scriptfind(driver, "#COMP6010")
+        resultado = Scriptfind(driver, "#COMP6010",retorno=True,tipo="value")
         if resultado:
-            numero_nota = resultado[0].get("value")
+            numero_nota = resultado
             log(f"Número da nota encontrado em COMP6010: {numero_nota}")
         else:
             numero_nota = None
             log("Número da nota não encontrado em COMP6010. Definido como None.")
 
-        resultado = Scriptfind(driver, "#COMP6016")
+        resultado = Scriptfind(driver, "#COMP6016",retorno=True,tipo="value")
         if resultado:
-            fornecedor = resultado[0].get("value")
+            fornecedor = resultado
             log(f"Número do fornecedor encontrado em COMP6016: {fornecedor}")
         else:
             fornecedor = None
@@ -115,6 +115,7 @@ def lancamento(driver, param, filial):
 
         caminho_nota_servidor = param[0]+param[1]+param[2]+param[4]
         print(caminho_nota_servidor)
+        #aqui encontra a nota e passa para LLM 
         dados_nota = encontrar_nota(caminho_nota_servidor, param[7], filial, dados_a_comparar)
 
         log(f"Retorno bruto de encontrar_nota: {dados_nota}")
@@ -202,14 +203,11 @@ def lancamento(driver, param, filial):
             return montar_retorno_nao_lancada(
                 dados_lancadas, filial, fornecedor, dados_a_comparar[3], "NOTA CONTÉM IMPOSTO"
             )
-
         else:
-            teste = lancamentoSimples.lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3])
+            teste = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7])
             print (teste)
             return teste
-        print("1 minuto de espera")
-        log("Aguardaddando um minuto para continuar")
-        time.sleep(60)
+ 
   
     except Exception as e:
         log("===== ERRO INESPERADO NO LANCAMENTO =====")
