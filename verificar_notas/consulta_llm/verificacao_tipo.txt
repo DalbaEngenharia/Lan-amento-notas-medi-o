@@ -1,0 +1,5 @@
+Verifique o texto de uma nota e me retorne o tipo especificado
+se for DACTE retorne "CTE"
+se for Nostas fiscais de serviço retorne "NFS" 
+se for cupons fiscais retorne "CF" 
+retorne apenas o tipo relacionado, nada de explicações

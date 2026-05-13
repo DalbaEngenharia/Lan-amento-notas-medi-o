@@ -2,11 +2,9 @@ from Protheus_Biblioteca import *
 from Listas.lista import TES, ESPEC, natureza
 from verificar_notas.texto_notas import encontrar_nota
 import traceback
-import json
-import ast
 from Lancamentos.relatorio import *
-
-def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar):
+from Lancamentos.lancamento_cte import * 
+def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal):
     try:
         #se der tudo certo, inicia o lançamento da nota
         log("Nota não contém imposto. Prosseguindo com lançamento.")
@@ -53,7 +51,7 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
             return montar_retorno_nao_lancada(
                 dados_lancadas, filial, fornecedor, dados_a_comparar, "AF não compativel"
             )
-
+ 
         #INICIA O PREENCHIMENTO DA TES EM TODAS AS LINHAS
         x = 0
         while x < len(linhas):
@@ -71,16 +69,19 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
                     log(f"Inserindo TES '{tes}' na linha {x}")
                     inserir_na_tabela_shadow(driver, "COMP6022", 7, tes, linha_index=x, enter=True)
                     log(f"Comando de inserção executado para linha {x}")
+
+
                 except Exception as e:
                     log(f"Erro ao inserir TES na linha {x} da COMP6022: {e}")
                     print(f"Erro ao inserir TES na linha {x}: {e}")
 
                 time.sleep(2)
-
+    
                 # recarrega a tabela após edição
                 tabela = driver.find_element(By.ID, "COMP6022")
                 tabela_2 = expand_shadow(driver, tabela)
                 linhas = tabela_2.find_elements(By.CSS_SELECTOR, "tbody tr")
+                inserir_texto(driver, "COMP6019", tipo_nota, enter=True)
 
                 if x >= len(linhas):
                     log(f"[COMP6022] Linha {x} não existe mais após recarregar tabela.")
@@ -190,7 +191,7 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
 
             return resultado;
         """, tabela)
-
+        
         log(f"Dados lidos da COMP6092: {dados}")
         print("========================================")
         print("TABELA COMP6092")
@@ -306,33 +307,40 @@ def lancamento_simples(driver, tipo_nota, dados_nota, dados_lancadas, filial, fo
             return montar_retorno_nao_lancada(
                 dados_lancadas, filial, fornecedor, dados_a_comparar, "FALHA AO PREENCHER DATA COMP6092"
             )
-
+        print(tipo_nota)
+        if tipo_nota == "CTE": 
+            cadastro_informações_danfe(driver, chave_nota_fiscal,dados_nota )
         # ==========================================================
         # 9) SALVAR
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
-        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
-        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
+        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        cancelar_lancamento_de_nota(driver)
 
         time.sleep(5)
-        Scriptfind(driver, "wa-button")
+        Scriptfind(driver, "wa-button",retorno=True )
         time.sleep(5)
 
         try:
-            funcao_tres_e_demais(driver, "wa-button", "OK")
+            host = driver.find_element(By.ID, "COMP7512")
+
+            shadow_root = driver.execute_script(
+                "return arguments[0].shadowRoot", host
+            )
+            btn = shadow_root.find_element(By.CSS_SELECTOR, "button")
+
+            driver.execute_script("arguments[0].click();", btn)
         except Exception:
             pass
-
-        retorno = montar_retorno_lancada(
-            dados_lancadas, filial, fornecedor, dados_a_comparar
-        )
-
         print("DADOS NOTA LANÇADA:", dados_lancadas)
         log("Lançamento finalizado com retorno TRUE.")
+        return montar_retorno_lancada(
+            dados_lancadas, filial, fornecedor, dados_a_comparar
+        )        
 
-        return retorno
     except Exception as e:
         log("===== ERRO NO LANCAMENTO SIMPLES =====")
         log(f"Filial: {filial}")
