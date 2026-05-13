@@ -1,80 +1,209 @@
 from .consulta_llm.consulta_llm import consulta_LLM
 from .notas_cte import *
 from .consultar_notas.consultar_notas_pdf import consultar_notas_pdf_no_servidor
-from Listas.lista import ESPEC, TES  # esse fica absoluto porque está fora
+from Listas.lista import ESPEC, TES
 import json
 
-with open("verificar_notas/textoLLm.txt", "r", encoding="utf-8") as arquivo:    
-    texto = arquivo.read()
 
-def conferir_serie_e_especie(caminho):
-    if ("CF" in caminho and "F" in caminho[10]) or ("NF" in caminho  and caminho[10] != "F"):
-        print("SERIE OU ESPECIE ERRADA")
-        return False
-    return True
+print("====================================")
+print("INICIANDO ARQUIVO")
+print("====================================")
 
-def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, teste=False):
-    tipo_nota = None
-    print("Dados de comparação recebidos:", dados_de_comparacao)
+with open("verificar_notas/consulta_llm/verificacao_tipo.txt", "r", encoding="utf-8") as arquivo_verifica:
+    texto_verificação = arquivo_verifica.read()
+
+print("Arquivo verificacao_tipo.txt carregado")
+
+
+def setar_prompt(tipo_nota, dados_de_comparacao, modelo_llm):
+
+    print("====================================")
+    print("ENTROU NA FUNÇÃO setar_prompt")
+    print("====================================")
+    print("tipo_nota:", tipo_nota)
+    print("modelo_llm:", modelo_llm)
+    print("dados_de_comparacao:", dados_de_comparacao)
+
+    if modelo_llm in ["NFS",  "CF"]:
+        print("Carregando prompt NFS/CF")
+
+        with open("verificar_notas/consulta_llm/texto_llm_nfs_cf.txt", "r", encoding="utf-8") as arquivo:
+            texto = arquivo.read()
+
+    if modelo_llm == "CTE":
+        print("Carregando prompt CTE")
+
+        with open("verificar_notas/consulta_llm/texto_llm_cte.txt", "r", encoding="utf-8") as arquivo:
+            texto = arquivo.read()
 
     prompt = texto
 
-    # identifica se vai ser CTE
-    print(len(chave))
-    if len(chave) > 30:
-        None
-    #######################################    
-    if conferir_serie_e_especie(chave):    
-       None
-    else: 
-        return "Serie errada"
-    #######################################
-    # pega o tipo de nota e a TES
-
-    # ADICIONA DADOS DO SISTEMA PARA COMPARAR COM A NOTA
-    #######################################
-    #######################################
     print("TIPO DE NOTA:", tipo_nota)
+
     prompt += "\nNumero da nota para comparação: " + str(dados_de_comparacao[3]).strip()
     prompt += "\nTipo de nota para comparação: " + str(dados_de_comparacao[0]).strip()
     prompt += "\nData de emissão para comparação: " + str(dados_de_comparacao[1]).strip()
     prompt += "\nValor bruto para comparação: " + str(dados_de_comparacao[2]).strip()
+    prompt += "\n\nTEXTO DO DOCUMENTO:\n"
 
-    #DADOS FINAIS = CAMINHA DA NOTA NO SERVIDOR
+    print("Prompt montado com sucesso")
+    print("Tamanho do prompt:", len(prompt))
+
+    return prompt
+
+
+def conferir_serie_e_especie(caminho):
+
+    print("====================================")
+    print("ENTROU NA FUNÇÃO conferir_serie_e_especie")
+    print("====================================")
+    print("Caminho recebido:", caminho)
+
+    if ("CF" in caminho and "F" in caminho[10]) or ("NF" in caminho and caminho[10] != "F"):
+        print("SERIE OU ESPECIE ERRADA")
+        return False
+
+    print("Série e espécie OK")
+    return True
+
+
+def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, teste=False):
+
+    print("====================================")
+    print("INICIANDO encontrar_nota")
+    print("====================================")
+
+    tipo_nota = None
+
+    print("Dados recebidos:")
+    print("caminho_nota_servidor:", caminho_nota_servidor)
+    print("chave:", chave)
+    print("filial:", filial)
+    print("dados_de_comparacao:", dados_de_comparacao)
+    print("teste:", teste)
+
+    print("Tamanho da chave:", len(chave))
+
+    #######################################
+    print("Validando série e espécie")
+
+    if conferir_serie_e_especie(chave):
+        print("Validação OK")
+        None
+    else:
+        print("Retornando erro de série")
+        return "Serie errada"
+
+    #######################################
+
     print("Dados finais para nota:", caminho_nota_servidor)
 
-    pdfs_encontrados, texto_final = consultar_notas_pdf_no_servidor(filial, caminho_nota_servidor)
+    print("Chamando consultar_notas_pdf_no_servidor")
+
+    pdfs_encontrados, texto_final = consultar_notas_pdf_no_servidor(
+        filial,
+        caminho_nota_servidor
+    )
+
+    print("Quantidade de PDFs encontrados:", pdfs_encontrados)
+    print("Tamanho texto extraído:", len(texto_final))
 
     if pdfs_encontrados == 0:
         print("Nenhum PDF encontrado dentro da pasta da nota.")
-        return {"erro": "True", "motivo": "Não foi encontrado nem um PDF"}
+
+        return {
+            "erro": "True",
+            "motivo": "Não foi encontrado nem um PDF"
+        }
 
     if not texto_final.strip():
+
         print("Nenhum texto foi extraído dos PDFs.")
         print("OBS: Isso geralmente significa que o PDF é escaneado (imagem) e não texto.")
-        return {"erro": "True", "motivo": "Não foi possível ler o PDF"}
 
-    prompt += "\n\nTEXTO DO DOCUMENTO:\n" + texto_final
+        return {
+            "erro": "True",
+            "motivo": "Não foi possível ler o PDF"
+        }
 
     print("####################################")
     print("PROMPT ENVIADO AO LLM")
     print("####################################")
-    print(prompt)
-          
-    dados_json = consulta_LLM(prompt)
+
+    print("Tamanho texto verificação:", len(texto_verificação))
+    print("Tamanho texto final:", len(texto_final))
+
+    verificacao = consulta_LLM(texto_verificação + texto_final)
+
+    print("====================================")
+    print("RETORNO VERIFICAÇÃO LLM")
+    print("====================================")
+    print(verificacao)
+
+    print("Tipo esperado:", dados_de_comparacao[0].strip())
+    print("Tipo identificado:", verificacao)
+
+    if dados_de_comparacao[0].strip() == verificacao:
+
+        print("TIPO CONFIRMADO PELO LLM")
+        print("HELL YEAH")
+
+        prompt = setar_prompt(
+            tipo_nota,
+            dados_de_comparacao,
+            modelo_llm=verificacao
+        )
+
+        print("Tamanho prompt antes do texto:", len(prompt))
+
+        prompt = prompt + texto_final
+
+        print("Tamanho prompt final:", len(prompt))
+
+        #################################
+
+        print("Chamando consulta_LLM para JSON")
+
+        dados_json = consulta_LLM(prompt)
+
+        print("Retorno bruto do LLM:")
+        print(dados_json)
+
+    else:
+        print("TIPO NÃO CONFERE")
+        print("Esperado:", dados_de_comparacao[0].strip())
+        print("Recebido:", verificacao)
 
     if dados_json is None:
+
         print("LLM retornou None.")
         return None
 
     try:
+
+        print("Convertendo JSON")
+
         dados_json = json.loads(dados_json)
+
+        print("JSON convertido com sucesso")
+
     except json.JSONDecodeError as e:
-        print("Erro ao converter JSON digitado:", e)
+
+        print("====================================")
+        print("ERRO AO CONVERTER JSON")
+        print("====================================")
+        print(e)
+
         return None
 
-    print("JSON convertido:")
+    print("====================================")
+    print("JSON FINAL")
+    print("====================================")
+
     print(dados_json)
 
+    print("====================================")
+    print("FINALIZANDO encontrar_nota")
+    print("====================================")
 
     return dados_json

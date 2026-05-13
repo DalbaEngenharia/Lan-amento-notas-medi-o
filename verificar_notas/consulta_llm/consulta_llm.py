@@ -20,17 +20,19 @@ def consulta_LLM(texto):
         try:
             log(f"[LLM] Tentativa {tentativa}...")
 
-            # response = client.models.generate_content(
-            #     model="gemini-2.5-flash",
-            #     contents=texto
-            # )
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=texto
+            )
+            if response is None:
+                log("[LLM] Resposta do modelo veio None.")
+                raise Exception("Resposta None do modelo")
 
-            # if response is None:
-            #     log("[LLM] Resposta do modelo veio None.")
-            #     raise Exception("Resposta None do modelo")
-
-            # resposta_texto = getattr(response, "text", None)
-            resposta_texto = '{"erro":"True","motivo":"Tipo de documento enviado diferente do tipo real identificado no documento. Cancelar lançamento."}'
+            resposta_texto = getattr(response, "text", None)
+            print(resposta_texto)
+            
+            # resposta_texto = '{"Tipo_nota":"CTE","numero_nota":"398","data_emissao":"02/02/2026","AC":null,"data_vencimento":"25/02/2026","cnpj_emitente":"27111626000121","valor_total":"18138.59","valor_liquido":"18138.59","contem_imposto":"False","valor_impostos":"0.00","natureza":"PXX001"}'
+           
             if not resposta_texto or not resposta_texto.strip():
                 log("[LLM] response.text veio vazio.")
                 raise Exception("response.text vazio")

@@ -18,15 +18,6 @@ Retorne todos os campos em uma única linha.
 Todos os valores monetários devem ter ponto decimal e 2 casas.
 Campos ausentes devem ser null.
 
-Identificação do tipo de documento:
-
-Se o texto contiver "DACTE", o tipo é "CTE".
-Se o texto contiver "NOTA FISCAL" ou "NFS-e" ou "DANFSe", o tipo é "NFS".
-Se não contiver nenhum dos termos acima, ou for uma "FATURA", "FATURA DE LOCAÇÂO" tipo é "CF".
-Compare o tipo de documento enviado com o tipo real identificado no texto.
-Se houver divergência, retorne:
-{"erro":"True","motivo":"Tipo de documento enviado diferente do tipo real identificado no documento. Cancelar lançamento."}
-
 Número da nota:
 
 Extraia apenas o número principal do documento, ignorando zeros à esquerda (00000XXXX e XXXX são o mesmo) e ignorando série, DPS, RPS, chave de acesso, protocolo ou outros números.
