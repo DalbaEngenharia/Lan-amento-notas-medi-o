@@ -144,7 +144,7 @@ def LoopLancamentos(driver):
                     print(f"doc={doc}, serie={serie}, fornece={fornecedor}")
                     lista_campos_filtros = ["COMP9003", "COMP9005", "COMP9007"]
                     for i, campo_id in enumerate(lista_campos_filtros):
-                        time.sleep(5)
+                        time.sleep(2)
    
                         campo = driver.find_element(By.ID, campo_id)
 
