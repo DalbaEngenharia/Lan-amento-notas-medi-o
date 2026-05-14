@@ -635,94 +635,180 @@ def clicar_aba(driver, id_botao, timeout=10):
 
 
 def marcar_filtro(driver, filtros):
-    print("==========FILTRO 1==========")
 
-    botao = driver.find_element(By.CSS_SELECTOR, 'wa-button[caption="Filtrar"]')
+    print("========== ABRIR FILTRO ==========")
 
-    # abre painel
+    # -------------------------------------------------
+    # abre painel filtro
+    # -------------------------------------------------
+    botao = driver.find_element(
+        By.CSS_SELECTOR,
+        'wa-button[caption="Filtrar"]'
+    )
+
     driver.execute_script("""
         const host = arguments[0];
+
+        host.scrollIntoView({
+            block: 'center'
+        });
+
         const btn = host.shadowRoot?.querySelector('button');
-        if (btn) btn.click();
+
+        if (btn) {
+            btn.click();
+        } else {
+            host.click();
+        }
     """, botao)
-
+    ##### ok 
     esperar_existir(driver, "wa-button", "Aplicar")
-    time.sleep(1)
 
-    # ==================================================
+    time.sleep(2)
+
+    # -------------------------------------------------
+    # painel dos filtros
+    # -------------------------------------------------
+    painel = driver.find_element(
+        By.CSS_SELECTOR,
+        'wa-panel[id="COMP6009"]'
+    )
+
+    # -------------------------------------------------
+    # função clique real checkbox
+    # -------------------------------------------------
+    def clicar_checkbox(checkbox):
+
+        driver.execute_script("""
+            const host = arguments[0];
+
+            host.scrollIntoView({
+                block: 'center'
+            });
+
+            const label = host.shadowRoot?.querySelector('label');
+            const input = host.shadowRoot?.querySelector('input');
+
+            if (label) {
+                label.dispatchEvent(new MouseEvent('mousedown', {
+                    bubbles: true
+                }));
+
+                label.dispatchEvent(new MouseEvent('mouseup', {
+                    bubbles: true
+                }));
+
+                label.click();
+            }
+
+            if (input) {
+
+                input.dispatchEvent(new MouseEvent('click', {
+                    bubbles: true
+                }));
+
+                input.checked = !input.checked;
+
+                input.dispatchEvent(new Event('change', {
+                    bubbles: true
+                }));
+
+                input.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
+            }
+        """, checkbox)
+
+        time.sleep(1)
+    # -------------------------------------------------
     # PASSO 1 -> desmarca todos
-    # ==================================================
-    for _ in range(20):
+    # -------------------------------------------------
+    print("========== DESMARCANDO ==========")
 
-        todos = driver.find_elements(By.CSS_SELECTOR, "wa-checkbox")
-        alterou = False
+    todos = painel.find_elements(
+        By.CSS_SELECTOR,
+        "wa-checkbox"
+    )
 
-        for checkbox in todos:
+    for checkbox in todos:
 
-            marcado = driver.execute_script("""
-                const host = arguments[0];
-                const input = host.shadowRoot?.querySelector('input[type="checkbox"]');
-                return input ? input.checked : false;
-            """, checkbox)
+        caption = checkbox.get_attribute("caption")
 
-            caption = checkbox.get_attribute("caption")
-            #print("Filtro:", caption, "Marcado:", marcado)
+        bloqueado = driver.execute_script("""
+            const host = arguments[0];
 
-            if marcado:
+            return (
+                host.hasAttribute('readonly')
+            );
+        """, checkbox)
 
-                driver.execute_script("""
-                    const host = arguments[0];
-                    const label = host.shadowRoot?.querySelector('label');
-                    if (label) label.click();
-                """, checkbox)
+        if bloqueado:
+            print(f"IGNORADO readonly -> {caption}")
+            continue
 
-                time.sleep(0.5)
-                alterou = True
-                break
+        marcado = driver.execute_script("""
+            const host = arguments[0];
 
-        if not alterou:
-            break
+            const input = host.shadowRoot?.querySelector('input');
 
-    # ==================================================
-    # PASSO 2 -> marcar filtros desejados
-    # ==================================================
-    print("==========FILTRO 2==========")
+            return input ? input.checked : false;
+        """, checkbox)
+
+        print(f"{caption} -> marcado: {marcado}")
+
+        if marcado:
+
+            print(f"DESMARCANDO -> {caption}")
+
+            clicar_checkbox(checkbox)
+
+            time.sleep(1)
+
+    # -------------------------------------------------
+    # PASSO 2 -> marca filtros desejados
+    # -------------------------------------------------
+    print("========== MARCANDO ==========")
 
     for filtro in filtros:
 
-        checkbox = driver.find_element(
+        print(f"TENTANDO MARCAR -> {filtro}")
+
+        checkbox = painel.find_element(
             By.CSS_SELECTOR,
             f'wa-checkbox[caption="{filtro}"]'
         )
 
-        # força click real no host + label + input
-        driver.execute_script("""
+        bloqueado = driver.execute_script("""
             const host = arguments[0];
 
-            const input = host.shadowRoot?.querySelector('input[type="checkbox"]');
-            const label = host.shadowRoot?.querySelector('label');
-
-            if (label) label.click();
-
-            if (input && !input.checked) {
-                input.click();
-                input.checked = true;
-                input.dispatchEvent(new Event('change', { bubbles:true }));
-                input.dispatchEvent(new Event('input', { bubbles:true }));
-            }
+            return (
+                host.hasAttribute('readonly')
+            );
         """, checkbox)
 
-        time.sleep(0.8)
+        if bloqueado:
+            print(f"{filtro} readonly")
+            continue
+
+        clicar_checkbox(checkbox)
 
         marcado = driver.execute_script("""
             const host = arguments[0];
-            const input = host.shadowRoot?.querySelector('input[type="checkbox"]');
-            return input ? input.checked : false;
+
+            return host.hasAttribute('checked');
         """, checkbox)
 
-        #print(f"{filtro} marcado? {marcado}")
+        print(f"{filtro} marcado? {marcado}")
 
+    # -------------------------------------------------
+    # aplicar
+    # -------------------------------------------------
     time.sleep(1)
+
+    print("========== APLICAR ==========")
+
+
+    time.sleep(2)
 
     # aplicar
     funcao_tres_e_demais(driver, "wa-button", "Aplicar", 0)
