@@ -60,13 +60,21 @@ def LoopLancamentos(driver):
 
             
                 ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
-                time.sleep(20)
+                time.sleep(5)
                 print("#############################################################")
                 
-                textos_pop_ups = Scriptfind(driver, "wa-text-view", retorno=True, tipo="caption")
-                texto = textos_pop_ups.lower()
+                textos_pop_ups = Scriptfind(driver, "wa-text-view", retorno=True, tipo="caption", lista=True)
+                texto = ""
 
-                tem_licenca = "excedeu numero de licenças" in texto
+                for i, cadaUm in enumerate(textos_pop_ups):
+
+                    if i == 0:
+                        texto = cadaUm.lower()
+                    else:
+                        texto += "---" + cadaUm.lower()
+
+                print("Texto:", texto)
+                tem_licenca = "licenças" in texto
                 tem_moedas = "moedas" in texto
 
                 if tem_licenca:
@@ -77,13 +85,12 @@ def LoopLancamentos(driver):
                         funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
                         print("Clicou em fechar mensagem de licença")
                         log("Clicou em fechar mensagem de licença")
-                        time.sleep(30)
+                        time.sleep(5)
                     except Exception as e:
                         print(f"Erro ao fechar licença: {e}")
 
                     # continua o loop (não dá break)
                     continue
-
 
                 elif tem_moedas:
                     print("Popup de Moedas detectado")
