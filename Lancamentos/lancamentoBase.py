@@ -68,6 +68,11 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                     # coluna 7 = TES
                     log(f"Inserindo TES '{tes}' na linha {x}")
                     inserir_na_tabela_shadow(driver, "COMP6022", 7, tes, linha_index=x, enter=True)
+                    body = driver.find_element(By.TAG_NAME, "body")
+                    for loopLocal in range(5):
+                        body.send_keys(Keys.ESCAPE)
+                        log("Enviado ESC para fechar possíveis modais/edições pendentes.")
+                        time.sleep(1)
                     log(f"Comando de inserção executado para linha {x}")
 
 
@@ -315,10 +320,10 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        # esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        cancelar_lancamento_de_nota(driver)
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # cancelar_lancamento_de_nota(driver)
 
         time.sleep(5)
         Scriptfind(driver, "wa-button",retorno=True )

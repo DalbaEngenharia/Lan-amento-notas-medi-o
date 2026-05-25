@@ -173,7 +173,11 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
         print("TIPO NÃO CONFERE")
         print("Esperado:", dados_de_comparacao[0].strip())
         print("Recebido:", verificacao)
-
+        return {
+                "erro": True,
+                "motivo": "Espécie de documento divergente da nota para o sistema"
+                }
+    
     if dados_json is None:
 
         print("LLM retornou None.")
