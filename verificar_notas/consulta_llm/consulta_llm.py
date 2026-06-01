@@ -64,6 +64,6 @@ def consulta_LLM(texto):
             if not erro_transitorio:
                 log("[LLM] Erro não transitório. Abortando sem retry.")
                 return None
-            espera = 10
+            espera = 3
             log(f"[LLM] Erro transitório. Aguardando {espera}s para retry...")
             time.sleep(espera)

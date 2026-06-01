@@ -18,55 +18,121 @@ Retorne todos os campos em uma única linha.
 Todos os valores monetários devem ter ponto decimal e 2 casas.
 Campos ausentes devem ser null.
 
+REGRA CRÍTICA SOBRE Tipo_nota:
+
+NUNCA retornar erro por divergência entre o Tipo_nota identificado no documento e o tipo informado pelo sistema.
+
+O tipo informado pelo sistema é apenas referência operacional e NÃO deve ser validado.
+
+A validação de Tipo_nota já foi realizada externamente pelo sistema antes desta etapa.
+
+Portanto:
+
+* NÃO compare Tipo_nota
+* NÃO gere erro de divergência de espécie
+* NÃO gere erro de documento incompatível
+* NÃO gere erro de DACTE x CF
+* NÃO gere erro de NFS x CTE
+* NÃO valide o tipo do documento
+
+O campo "Tipo_nota" continua obrigatório no JSON final e deve conter SOMENTE o tipo REAL identificado no documento analisado.
+
+Exemplos:
+
+* Documento DACTE → "Tipo_nota":"CTE"
+* Documento NFS-e → "Tipo_nota":"NFS"
+* Documento NFS-e com imposto → "Tipo_nota":"NFPS"
+* Documento Cupom Fiscal → "Tipo_nota":"CF"
+
+Mesmo que o sistema informe outro tipo, isso NÃO deve gerar erro.
+
 Número da nota:
 
 Extraia apenas o número principal do documento, ignorando zeros à esquerda (00000XXXX e XXXX são o mesmo) e ignorando série, DPS, RPS, chave de acesso, protocolo ou outros números.
-Compare o número filtrado do documento diretamente com o número completo informado pelo sistema, se o numero da nota for "xx/yyyy" considerar apenas "xx"
-Se "xx" filtrado não coincidir exatamente, retorne imediatamente:(ex: 27 e sistema 272026)
-{"erro":"True","motivo":informe o motivo}
+
+Compare o número filtrado do documento diretamente com o número completo informado pelo sistema.
+
+Se o número da nota estiver no formato "xx/yyyy", considere apenas "xx".
+
+Se o número filtrado não coincidir exatamente com o informado pelo sistema, retorne imediatamente:
+{"erro":"True","motivo":"Número da nota divergente entre documento e sistema"}
 
 Impostos:
 
 Considere que há imposto apenas quando valor_liquido for diferente de valor_total.
+
 contem_imposto = "True" somente se valor_total != valor_liquido.
+
 contem_imposto = "False" se valor_total == valor_liquido.
+
 valor_impostos = valor_total - valor_liquido se houver imposto, caso contrário "0.00".
 
 Ajuste de tipo e natureza:
 
-Se houver imposto retido e o tipo for "NFS", ajuste Tipo_nota para "NFPS".
-Se não mantenha o atual
+Se houver imposto retido e o tipo identificado no documento for "NFS", ajuste automaticamente Tipo_nota para "NFPS".
+
+Se não houver imposto, mantenha o tipo identificado no documento.
+
 natureza = "PXX003" se houver imposto, caso contrário "PXX001".
 
 Campos a extrair:
-{"Tipo_nota": null,"numero_nota": null,"data_emissao": null,"AC":"null","data_vencimento": null,"cnpj_emitente": null,"valor_total": null,"valor_liquido": null,"contem_imposto": null,"valor_impostos": null,"natureza": null}
 
+{"Tipo_nota": null,"numero_nota": null,"data_emissao": null,"AC": null,"data_vencimento": null,"cnpj_emitente": null,"valor_total": null,"valor_liquido": null,"contem_imposto": null,"valor_impostos": null,"natureza": null}
+AC = AF, Autorização de faturamento contendo 6 digitos (xxxxxx)
 Regras de consistência obrigatória:
 
 Se valor_total == valor_liquido:
-contem_imposto = "False", valor_impostos = "0.00", natureza = "PXX001".
+
+* contem_imposto = "False"
+* valor_impostos = "0.00"
+* natureza = "PXX001"
+
 Se valor_total != valor_liquido:
-contem_imposto = "True", valor_impostos = valor_total - valor_liquido, natureza = "PXX003".
+
+* contem_imposto = "True"
+* valor_impostos = valor_total - valor_liquido
+* natureza = "PXX003"
+
 valor_impostos deve ser sempre formatado com 2 casas decimais.
 
 Regras de validação com dados de comparação:
 
-Compare todos os dados extraídos com os dados fornecidos pelo sistema (CNPJ, número da nota completo, data de emissão, valor total, tipo de documento).
-Qualquer divergência relevante deve retornar:
-{"erro":"True","motivo": informar motivo especifico }
+Compare apenas os seguintes dados com o sistema:
+
+* CNPJ
+* Número completo da nota
+* Data de emissão
+* Valor total
+
+NÃO comparar Tipo_nota.
+
+Qualquer divergência relevante nos campos acima deve retornar:
+{"erro":"True","motivo":"informar exatamente qual campo divergiu entre documento e sistema"}
 
 Regras de prioridade na extração:
 
 Sempre priorize campos explicitamente identificados no documento.
+
 Para múltiplos valores, datas ou CNPJs, priorize:
-valor_total final
-data_emissao principal
-CNPJ do emitente/prestador/remetente
-Para data_vencimento, procure também em descrições, observações, fatura, boleto ou dados adicionais.
+
+* valor_total final
+* data_emissao principal
+* CNPJ do emitente/prestador/remetente
+
+Para data_vencimento, procure também em:
+
+* descrições
+* observações
+* fatura
+* boleto
+* dados adicionais
+
 Se houver ambiguidade real, use null.
 
 Formatação final obrigatória:
 
 Retornar apenas o JSON final em uma linha.
+
 Todos os campos obrigatórios devem estar presentes.
+
 Use null se não for possível identificar um valor.

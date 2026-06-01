@@ -1,5 +1,34 @@
-Verifique o texto de uma nota e me retorne o tipo especificado
-se for DACTE retorne "CTE"
-se for Nostas fiscais de serviço retorne "NFS" 
-se nem um dos acima retorne "CF" 
-retorne apenas o tipo relacionado, nada de explicações
+analize com calma, sem pressa para evitar erros e melhorar a precisão.
+Classifique o documento em apenas UM dos tipos abaixo:
+
+CTE
+NFS
+NFPS
+CF
+
+Regras:
+
+1. Se houver:
+- DACTE
+- CONHECIMENTO DE TRANSPORTE
+- CT-E
+Retorne: CTE 
+
+2. Se houver:
+- NOTA FISCAL DE SERVIÇO
+- NOTA FISCAL DE SERVIÇOS
+- NFS-E
+- NFSE
+Retorne: NFS
+
+3. Caso não seja nenhum dos anteriores, ou seja uma FATURA de qualquer tipo:
+Retorne: CF
+
+IMPORTANTE:
+- Retorne SOMENTE:
+CTE
+NFS
+CF
+- Sem frases
+- Sem pontuação
+- Sem explicações
