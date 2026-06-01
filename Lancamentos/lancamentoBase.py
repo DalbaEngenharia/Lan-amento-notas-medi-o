@@ -9,7 +9,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         #se der tudo certo, inicia o lançamento da nota
         log("Nota não contém imposto. Prosseguindo com lançamento.")
         print("Não tem imposto")
-
+        tipo_nota = dados_nota['Tipo_nota']
         tes = TES[tipo_nota]
         log(f"TES final definida para lançamento: {tes}")
         print("TES final:", tes)
@@ -72,7 +72,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                     for loopLocal in range(5):
                         body.send_keys(Keys.ESCAPE)
                         log("Enviado ESC para fechar possíveis modais/edições pendentes.")
-                        time.sleep(1)
+                        time.sleep(0.5)
                     log(f"Comando de inserção executado para linha {x}")
 
 
@@ -80,13 +80,14 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                     log(f"Erro ao inserir TES na linha {x} da COMP6022: {e}")
                     print(f"Erro ao inserir TES na linha {x}: {e}")
 
-                time.sleep(2)
+                time.sleep(1)
     
                 # recarrega a tabela após edição
                 tabela = driver.find_element(By.ID, "COMP6022")
                 tabela_2 = expand_shadow(driver, tabela)
                 linhas = tabela_2.find_elements(By.CSS_SELECTOR, "tbody tr")
                 inserir_texto(driver, "COMP6019", tipo_nota, enter=True)
+                #if x == 22: 
 
                 if x >= len(linhas):
                     log(f"[COMP6022] Linha {x} não existe mais após recarregar tabela.")
@@ -314,13 +315,18 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
             )
         print(tipo_nota)
         if tipo_nota == "CTE": 
-            cadastro_informações_danfe(driver, chave_nota_fiscal,dados_nota )
+            cadastro_informações_danfe(driver, dados_nota )
         # ==========================================================
         # 9) SALVAR
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
         funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        time.sleep(2)
+        try: 
+            funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
+        except: 
+            None
         esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
         funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
         # cancelar_lancamento_de_nota(driver)
