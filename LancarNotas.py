@@ -121,6 +121,7 @@ def lancamento(driver, param, filial):
         log(f"Retorno bruto de encontrar_nota: {dados_nota}")
 
         #tratamento de notas que não foram encontradas ou não serão lançadas
+        print("dados nota", dados_nota)
         if dados_nota is None:
             log("Cancelando, erro ao consultar notas (retorno None)")
             cancelar_lancamento_de_nota(driver)
@@ -193,18 +194,15 @@ def lancamento(driver, param, filial):
             log("Nota contém imposto. Cancelando lançamento.")
             print("Tem imposto")
 
-            cancelar_lancamento_de_nota(driver)
-
-            log("Lançamento cancelado porque a nota contém imposto.")
-            print("CANCELADO, NOTA CONTÉM IMPOSTO")
-            time.sleep(15)
-            log("Aguardou 15 segundos após cancelamento por imposto.")
-
-            return montar_retorno_nao_lancada(
-                dados_lancadas, filial, fornecedor, dados_a_comparar[3], "NOTA CONTÉM IMPOSTO"
-            )
+            #cancelar_lancamento_de_nota(driver)
+            lancamento = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7],caminho_nota_servidor, imposto=True)
+            print("TESTE LANCAMENTO IMPOSTO: ", lancamento) 
+            
+            # return montar_retorno_nao_lancada(
+            #     dados_lancadas, filial, fornecedor, dados_a_comparar[3], "NOTA CONTÉM IMPOSTO"
+            # )
         else:
-            teste = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7])
+            teste = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7], param)
             print (teste)
             return teste
  

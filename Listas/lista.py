@@ -18,3 +18,31 @@ ESPEC = [
 natureza = [
         "PXX001" 
         ,"PXX003"]
+
+impostos = [
+    "IRRF Imposto de Renda",
+    "ISS Imp. Serviço",
+    "I.C.M.S",
+    "IPI",
+    "ICMS Retido",
+    "INSS",
+    "PIS - Via Apuração",
+    "COFINS - Via Apuração",
+    "PIS - Via Retenção",
+    "COFINS - Via Retenção",
+    "CSLL - Via Retenção",
+    "ICMS Complementar",
+    "PIS - Subst. Tributaria",
+    "COFINS - Subst.Tributaria",
+    "SEST/SENAT",
+    "FETHAB",
+    "FABOV",
+    "FACS",
+    "CPRB",
+    "FUNDESA",
+    "IMA-MT",
+    "FASE-MT",
+    "INSS - Patronal",
+    "CIDE",
+    "SENAR"
+]

@@ -63,20 +63,23 @@ def consultar_banco(filial):
         cursor.execute(sql)
 
         resultados = cursor.fetchall()
-
+        if filial == "030201": 
+            resultados = [1]
+        else: 
+            resultados = []
         # nome do arquivo csv
         arquivo = os.path.join(pasta_saida, "resultado.csv")
 
-        with open(arquivo, mode="w", newline="", encoding="utf-8-sig") as file:
-            writer = csv.writer(file, delimiter=";")
+        # with open(arquivo, mode="w", newline="", encoding="utf-8-sig") as file:
+        #     writer = csv.writer(file, delimiter=";")
 
-            # cabeçalho
-            colunas = [col[0] for col in cursor.description]
-            writer.writerow(colunas)
+        #     # cabeçalho
+        #     colunas = [col[0] for col in cursor.description]
+        #     writer.writerow(colunas)
 
-        #     # dados
-            for linha in resultados:
-                writer.writerow(linha)
+        # #     # dados
+        #     for linha in resultados:
+        #         writer.writerow(linha)
 
         print(f"Filial {filial}: {len(resultados)} registros salvos")
 

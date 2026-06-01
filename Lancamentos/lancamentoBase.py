@@ -3,12 +3,13 @@ from Listas.lista import TES, ESPEC, natureza
 from verificar_notas.texto_notas import encontrar_nota
 import traceback
 from Lancamentos.relatorio import *
-from Lancamentos.lancamento_cte import * 
-def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal):
+from Lancamentos.lancamento_cte import *
+from Lancamentos.lancar_imposto import lancar_imposto 
+def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal,caminho_nota_servidor, imposto=False ):
     try:
-        #se der tudo certo, inicia o lançamento da nota
-        log("Nota não contém imposto. Prosseguindo com lançamento.")
-        print("Não tem imposto")
+
+        print(dados_nota)
+        tipo_nota = dados_nota["Tipo_nota"]        #se der tudo certo, inicia o lançamento da nota
 
         tes = TES[tipo_nota]
         log(f"TES final definida para lançamento: {tes}")
@@ -144,9 +145,9 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # ==========================================================
         # 5) PREENCHER NATUREZA
         # ==========================================================
-        log(f"Preenchendo natureza no campo COMP6087 com valor: {natureza[0]}")
-        print("Natureza:", natureza[0])
-        inserir_texto(driver, "COMP6087", natureza[0], enter=True, quantidade=3)
+        natureza = dados_nota['natureza']
+        print("Natureza:", natureza)
+        inserir_texto(driver, "COMP6087", natureza, enter=True, quantidade=3)
         time.sleep(2)
         log("Aguardou 2 segundos após preencher natureza.")
 
@@ -315,19 +316,21 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         print(tipo_nota)
         if tipo_nota == "CTE": 
             cadastro_informações_danfe(driver, chave_nota_fiscal,dados_nota )
+
+        if imposto: 
+            lancar_imposto(driver, caminho_nota_servidor, filial,)
+
+            
         # ==========================================================
         # 9) SALVAR
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
-        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
-        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        # cancelar_lancamento_de_nota(driver)
+        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
+        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        cancelar_lancamento_de_nota(driver)
 
-        time.sleep(5)
-        Scriptfind(driver, "wa-button",retorno=True )
-        time.sleep(5)
 
         try:
             host = driver.find_element(By.ID, "COMP7512")

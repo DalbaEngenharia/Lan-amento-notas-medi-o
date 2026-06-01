@@ -148,11 +148,7 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
         print("TIPO CONFIRMADO PELO LLM")
         print("HELL YEAH")
 
-        prompt = setar_prompt(
-            tipo_nota,
-            dados_de_comparacao,
-            modelo_llm=verificacao
-        )
+        prompt = setar_prompt(tipo_nota,dados_de_comparacao,modelo_llm=verificacao)
 
         print("Tamanho prompt antes do texto:", len(prompt))
 
@@ -211,3 +207,49 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
     print("====================================")
 
     return dados_json
+
+def consultar_impostos_nota(caminho_nota_servidor, filial):
+
+    pdfs_encontrados, texto_final = consultar_notas_pdf_no_servidor(
+        filial,
+        caminho_nota_servidor
+    )
+
+    if pdfs_encontrados == 0:
+        return None
+
+    prompt = f"""
+    Extraia os impostos retidos da nota abaixo.
+
+    Retorne SOMENTE JSON.
+
+    Formato:
+
+    {{
+        "valor_bruto": "",
+        "valor_liquido": "",
+        "valor_total_impostos": "",
+        "impostos": [
+            {{
+                "tipo": "",
+                "base": "",
+                "aliquota": "",
+                "valor": ""
+            }}
+        ]
+    }}
+
+    TEXTO:
+    {texto_final}
+    """
+
+    retorno = consulta_LLM(prompt)
+
+    retorno = (
+        retorno
+        .replace("```json", "")
+        .replace("```", "")
+        .strip()
+    )
+
+    return json.loads(retorno)
