@@ -60,13 +60,21 @@ def LoopLancamentos(driver):
 
             
                 ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
-                time.sleep(20)
+                time.sleep(5)
                 print("#############################################################")
                 
-                textos_pop_ups = Scriptfind(driver, "wa-text-view", retorno=True, tipo="caption")
-                texto = textos_pop_ups.lower()
+                textos_pop_ups = Scriptfind(driver, "wa-text-view", retorno=True, tipo="caption", lista=True)
+                texto = ""
 
-                tem_licenca = "excedeu numero de licenças" in texto
+                for i, cadaUm in enumerate(textos_pop_ups):
+
+                    if i == 0:
+                        texto = cadaUm.lower()
+                    else:
+                        texto += "---" + cadaUm.lower()
+
+                print("Texto:", texto)
+                tem_licenca = "licenças" in texto
                 tem_moedas = "moedas" in texto
 
                 if tem_licenca:
@@ -77,13 +85,12 @@ def LoopLancamentos(driver):
                         funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
                         print("Clicou em fechar mensagem de licença")
                         log("Clicou em fechar mensagem de licença")
-                        time.sleep(30)
+                        time.sleep(5)
                     except Exception as e:
                         print(f"Erro ao fechar licença: {e}")
 
                     # continua o loop (não dá break)
                     continue
-
 
                 elif tem_moedas:
                     print("Popup de Moedas detectado")
@@ -240,17 +247,21 @@ def LoopLancamentos(driver):
                                 resultado, dados_lancados = lancamento(driver, dados, filial_atual)
                                 #se resultado for True (lancada) adiciona a lista_notas_lancadas para o relatorio
                                 if resultado:
+                                    Scriptfind(driver,"wa-button",retorno=True)
+                                    esperar_sumir_panel(driver,"wa-button"," F4 | F5 | F6 | F7 | F8 | F9 | F10 | F11")
                                     log(f"Lançamento retornou TRUE para nota {chave_nota}. Aguardando estabilização de 60s...")
                                     lista_notas_lançadas.append(dados_lancados)
                                     print("NOTAS LANCADAS OK:", lista_notas_lançadas)
-                                    time.sleep(60)
+
+                                    time.sleep(5)
                                     log(f"Nota tratada com sucesso (salva/cancelada/etc): {chave_nota}")
                                 #Caso false (não lancada) adiciona a lista_notas_não_lancadas para o relatorio
                                 else:
                                     lista_notas_nao_lancadas.append(dados_lancados)
                                     log(f"Lançamento retornou FALSE para nota {chave_nota}. Descendo para próxima na tabela após 60s...")
+
                 
-                                    time.sleep(60)
+                                    time.sleep(5)
                                     continue
 
                                 time.sleep(3)

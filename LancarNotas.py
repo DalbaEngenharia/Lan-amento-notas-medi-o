@@ -116,11 +116,12 @@ def lancamento(driver, param, filial):
         caminho_nota_servidor = param[0]+param[1]+param[2]+param[4]
         print(caminho_nota_servidor)
         #aqui encontra a nota e passa para LLM 
-        dados_nota = encontrar_nota(caminho_nota_servidor, param[7], filial, dados_a_comparar)
-
+        #dados_nota = encontrar_nota(caminho_nota_servidor, param[7], filial, dados_a_comparar)
+        dados_nota = {'Tipo_nota': 'NFE', 'numero_nota': '541', 'data_emissao': '06/02/2026', 'AC': None, 'data_vencimento': '15/02/2026', 'cnpj_emitente': '04.519.669/0001-45', 'valor_total': '25540.00', 'valor_liquido': '25540.00', 'contem_imposto': 'False', 'valor_impostos': '0.00', 'natureza': 'PXX001'}
         log(f"Retorno bruto de encontrar_nota: {dados_nota}")
 
         #tratamento de notas que não foram encontradas ou não serão lançadas
+        print("dados nota", dados_nota)
         if dados_nota is None:
             log("Cancelando, erro ao consultar notas (retorno None)")
             cancelar_lancamento_de_nota(driver)
@@ -193,18 +194,15 @@ def lancamento(driver, param, filial):
             log("Nota contém imposto. Cancelando lançamento.")
             print("Tem imposto")
 
-            cancelar_lancamento_de_nota(driver)
-
-            log("Lançamento cancelado porque a nota contém imposto.")
-            print("CANCELADO, NOTA CONTÉM IMPOSTO")
-            time.sleep(15)
-            log("Aguardou 15 segundos após cancelamento por imposto.")
-
-            return montar_retorno_nao_lancada(
-                dados_lancadas, filial, fornecedor, dados_a_comparar[3], "NOTA CONTÉM IMPOSTO"
-            )
+            #cancelar_lancamento_de_nota(driver)
+            lancamento = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7],caminho_nota_servidor, imposto=True)
+            print("TESTE LANCAMENTO IMPOSTO: ", lancamento) 
+            
+            # return montar_retorno_nao_lancada(
+            #     dados_lancadas, filial, fornecedor, dados_a_comparar[3], "NOTA CONTÉM IMPOSTO"
+            # )
         else:
-            teste = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7])
+            teste = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7], param)
             print (teste)
             return teste
  

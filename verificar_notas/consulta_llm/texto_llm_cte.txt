@@ -20,6 +20,34 @@ Retorne todos os campos em uma única linha.
 Todos os valores monetários devem possuir ponto decimal e exatamente 2 casas decimais.
 Campos ausentes devem ser null.
 
+REGRA CRÍTICA SOBRE Tipo_nota:
+
+Para este documento, o Tipo_nota deve obrigatoriamente ser retornado como "CTE".
+
+Mesmo que o documento contenha textos como:
+
+* DACTE
+* Conhecimento de Transporte
+* CT-e
+* Documento Auxiliar do CT-e
+
+O valor final do campo deve ser:
+"Tipo_nota":"CTE"
+
+Nunca retornar:
+
+
+
+* DACTE
+* CT-e
+* Conhecimento de Transporte
+* Documento Auxiliar CT-e
+
+Sempre normalizar para:
+"CTE"
+
+Nunca gerar erro por divergência de Tipo_nota.
+
 Extração do número da nota:
 
 Extraia apenas o número principal do documento.
@@ -27,19 +55,24 @@ Ignore zeros à esquerda, série, DPS, RPS, controle interno e demais números a
 Se o número estiver no formato "XX/YYYY", considere apenas "XX".
 Compare o número extraído com o número informado pelo sistema.
 O número deve coincidir exatamente após remoção de zeros à esquerda e /YYYY.
-Exemplo:
-Documento: "000027", Sistema: "27" Resultado: válido.
-Documento: "25/2026", sistema: "25", Resultado Valido.
-Exemplo inválido: Documento: "27" Sistema: "272026"
+
+Exemplos válidos:
+Documento: "000027", Sistema: "27"
+Documento: "25/2026", Sistema: "25"
+
+Exemplo inválido:
+Documento: "27", Sistema: "272026"
 
 Se houver divergência:
-{"erro":"True","motivo":especifique o motivo}
+{"erro":"True","motivo":<especifique o erro e os dados dos erros>}
 
 Regras de impostos:
 
 Considere que existe imposto apenas quando:
 valor_total != valor_liquido
+
 Regras:
+
 Se valor_total == valor_liquido:
 contem_imposto = "False"
 valor_impostos = "0.00"
@@ -56,24 +89,31 @@ Extração de origem e destino:
 
 Extraia município e UF de início da prestação/transporte/remessa.
 Extraia município e UF de destino/fim da prestação/entrega.
+
 Priorize campos como:
-"INÍCIO DA PRESTAÇÃO"
-"FIM DA PRESTAÇÃO"
-"ORIGEM"
-"DESTINO"
-"REMETENTE"
-"DESTINATÁRIO"
-"PRESTADOR"
-"TOMADOR"
+
+* INÍCIO DA PRESTAÇÃO
+* FIM DA PRESTAÇÃO
+* ORIGEM
+* DESTINO
+* REMETENTE
+* DESTINATÁRIO
+* PRESTADOR
+* TOMADOR
+
 Em DACTE/CTE:
 priorize sempre os campos oficiais de início e fim da prestação.
+
 Se houver múltiplas localidades:
 priorize a localidade operacional principal do transporte.
+
 Caso exista ambiguidade real:
 utilize null.
 
 Campos obrigatórios para retorno:
 
+AC = AF ou Autorização de Faturamento, contém 6 digitos (xxxxxx)
+chave da nota = remova espaços e cuida para não esquecer nem um/nehum número
 {
 "Tipo_nota": null,
 "numero_nota": null,
@@ -86,6 +126,7 @@ Campos obrigatórios para retorno:
 "contem_imposto": null,
 "valor_impostos": null,
 "natureza": null,
+"chave_nota_fiscal": null,
 "municipio_origem": null,
 "uf_origem": null,
 "municipio_destino": null,
@@ -103,26 +144,32 @@ Validações obrigatórias com dados do sistema:
 
 Compare os dados extraídos com os dados fornecidos pelo sistema:
 
-tipo_documento
-numero_nota
-data_emissao
-cnpj_emitente
-valor_total
+* numero_nota
+* data_emissao
+* cnpj_emitente
+* valor_total
+
+Não validar Tipo_nota.
 
 Se qualquer divergência relevante for encontrada:
-{"erro":"True","motivo":"<motivo específico da divergência>"}
+{"erro":"True","motivo":"<motivo específico da divergência e os dados>"}
 
 Regras de prioridade na extração:
 
 Sempre priorize:
 
-valor total final do documento
-data principal de emissão
-CNPJ do emitente/prestador/remetente
-número principal do documento fiscal
-campos explicitamente identificados
+* valor total final do documento
+* data principal de emissão
+* CNPJ do emitente/prestador/remetente
+* número principal do documento fiscal
+* campos explicitamente identificados
 
-Para data_vencimento procure também em outros documentos
+Para data_vencimento procure também em:
+
+* boletos
+* observações
+* faturas
+* dados adicionais
 
 Formatação final obrigatória:
 

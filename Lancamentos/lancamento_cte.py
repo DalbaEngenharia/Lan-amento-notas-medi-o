@@ -5,7 +5,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 import time
 
-def cadastro_informações_danfe(driver, chave_nota_fiscal, json):
+def cadastro_informações_danfe(driver, json):
 
     # abrir tela
     driver.find_element(By.ID, "BUTTON-COMP6034").click()
@@ -17,21 +17,40 @@ def cadastro_informações_danfe(driver, chave_nota_fiscal, json):
 
     # validar chave
     chave_cadastrada = pegar_texto_input(driver, "COMP6148")
-
-    if chave_cadastrada != chave_nota_fiscal:
+    chave_nota =  json['chave_nota_fiscal']
+    if chave_cadastrada != chave_nota:
         print("|", chave_cadastrada, "|")
-        print("|", chave_nota_fiscal, "|")
-        inserir_texto(driver, "COMP6148", chave_nota_fiscal)
+        print("|",chave_nota, "|")
+        inserir_texto(driver, "COMP6148",chave_nota)
+    else:
+        log("Chave NOTA Ok.")
+    time.sleep(1)
+    # verificar CT-e
+    driver.execute_script("""
+    const root = document.querySelector('#COMP6164').shadowRoot;
+
+    const select = root.querySelector('select');
+
+    select.value = "1";
+
+    select.dispatchEvent(new Event('input', { bubbles: true }));
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    """)
+
+    if chave_cadastrada != chave_nota:
+        print("|", chave_cadastrada, "|")
+        print("|",chave_nota, "|")
+        inserir_texto(driver, "COMP6164",chave_nota)
     else:
         log("Chave NOTA Ok.")
 
-    # verificar CT-e
     texto_tipo_cte = pegar_texto_input(driver, "COMP6164")
 
     if texto_tipo_cte == "N - Normal":
         print(texto_tipo_cte)
         print("tipo CTE OK")
-
+    time.sleep(5)
+    funcao_tres_e_demais(driver,"wa-button","Fechar")
     script = """
     function deepQuery(selector, root = document) {
         const elements = [];

@@ -1050,7 +1050,7 @@ def relatorio_consolidado(lista_notas_lancadas, lista_notas_nao_lancadas,  sem_n
             f.write("\n" + "=" * largura + "\n\n")
 
     print("\nRelatório salvo em:", arquivo_relatorio_atual)
-def Scriptfind(driver, item, retorno=False, tipo=None):
+def Scriptfind(driver, item, retorno=False, tipo=None, lista=False):
     script = """
         const selector = arguments[0];
 
@@ -1080,7 +1080,6 @@ def Scriptfind(driver, item, retorno=False, tipo=None):
                 class: el.className || "",
                 caption: (
                     el.getAttribute("caption") ||
-                    (el.shadowRoot && el.shadowRoot.innerText) ||
                     el.innerText ||
                     el.textContent ||
                     ""
@@ -1094,7 +1093,7 @@ def Scriptfind(driver, item, retorno=False, tipo=None):
 
     if not elementos:
         print(f"Nenhum elemento encontrado para: {item}")
-        return None if retorno else []
+        return [] if lista else None
 
     for i, s in enumerate(elementos):
         print(
@@ -1102,16 +1101,18 @@ def Scriptfind(driver, item, retorno=False, tipo=None):
             f"caption: {s['caption']}, value: {s['value']}"
         )
 
+    if lista:
+        if tipo:
+            return [e[tipo] for e in elementos]
+
+        return elementos
+
     if retorno:
         primeiro = elementos[0]
 
-        if tipo == "value":
-            return primeiro["value"]
+        if tipo:
+            return primeiro[tipo]
 
-        elif tipo == "caption":
-            return primeiro["caption"]
-
-        else:
-            return primeiro
+        return primeiro
 
     return elementos

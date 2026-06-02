@@ -3,12 +3,13 @@ from Listas.lista import TES, ESPEC, natureza
 from verificar_notas.texto_notas import encontrar_nota
 import traceback
 from Lancamentos.relatorio import *
-from Lancamentos.lancamento_cte import * 
-def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal):
+from Lancamentos.lancamento_cte import *
+from Lancamentos.lancar_imposto import lancar_imposto 
+def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal,caminho_nota_servidor, imposto=False ):
     try:
-        #se der tudo certo, inicia o lançamento da nota
-        log("Nota não contém imposto. Prosseguindo com lançamento.")
-        print("Não tem imposto")
+    
+        print(dados_nota)
+        tipo_nota = dados_nota["Tipo_nota"]        #se der tudo certo, inicia o lançamento da nota
 
         tes = TES[tipo_nota]
         log(f"TES final definida para lançamento: {tes}")
@@ -56,6 +57,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         x = 0
         while x < len(linhas):
             sucesso = False
+
             log(f"Iniciando preenchimento da linha {x} da COMP6022 com TES.")
 
             for tentativa in range(1, 6):
@@ -68,6 +70,11 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                     # coluna 7 = TES
                     log(f"Inserindo TES '{tes}' na linha {x}")
                     inserir_na_tabela_shadow(driver, "COMP6022", 7, tes, linha_index=x, enter=True)
+                    body = driver.find_element(By.TAG_NAME, "body")
+                    for loopLocal in range(5):
+                        body.send_keys(Keys.ESCAPE)
+                        log("Enviado ESC para fechar possíveis modais/edições pendentes.")
+                        time.sleep(0.5)
                     log(f"Comando de inserção executado para linha {x}")
 
 
@@ -75,7 +82,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                     log(f"Erro ao inserir TES na linha {x} da COMP6022: {e}")
                     print(f"Erro ao inserir TES na linha {x}: {e}")
 
-                time.sleep(2)
+                time.sleep(1)
     
                 # recarrega a tabela após edição
                 tabela = driver.find_element(By.ID, "COMP6022")
@@ -84,6 +91,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                 inserir_texto(driver, "COMP6019", tipo_nota, enter=True)
 
                 if x >= len(linhas):
+                    
                     log(f"[COMP6022] Linha {x} não existe mais após recarregar tabela.")
                     continue
 
@@ -112,7 +120,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                 time.sleep(1)
 
                 # sucesso se a célula ficou preenchida
-                if valor_coluna_7 != "":
+                if valor_coluna_7 == tes:
                     sucesso = True
                     log(f"[COMP6022] Sucesso ao preencher TES na linha {x}.")
                     break
@@ -123,9 +131,38 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                 return montar_retorno_nao_lancada(
                     dados_lancadas, filial, fornecedor, dados_a_comparar, f"FALHA AO PREENCHER TES LINHA {x}"
                 )
+            
+            if x == 10:
+                while True: 
+                    inserir_na_tabela_shadow(driver, "COMP6022", 7, tes, linha_index=x, enter=True)
+                    time.sleep(2)
+                    descer_para_proxima_na_tabela(driver,"COMP6022")
+                    #body.send_keys(Keys.ARROW_DOWN)
+                    time.sleep(0.5)
 
-            x += 1
-            log(f"Linha {x - 1} da COMP6022 concluída. Próxima linha: {x}")
+                    tabela = driver.find_element(By.ID, "COMP6022")
+                    tabela_2 = expand_shadow(driver, tabela)
+                    linhas = tabela_2.find_elements(By.CSS_SELECTOR, "tbody tr")
+
+                    linha_10 = linhas[10]
+                    colunas_10 = linha_10.find_elements(By.CSS_SELECTOR, "td")
+
+                    novo_valor = driver.execute_script(
+                        "return arguments[0].innerText || arguments[0].textContent || '';",
+                        colunas_10[7]
+                    ).strip()
+
+                    # apareceu uma nova linha sem TES
+                    
+                    if novo_valor != tes:
+                        continue
+
+                    # a linha 22 continua sendo a mesma
+                    break
+                break
+            else: 
+                x += 1
+                log(f"Linha {x - 1} da COMP6022 concluída. Próxima linha: {x}")
 
         # ==========================================================
         # 4) AVANÇAR PARA PRÓXIMA ETAPA
@@ -139,9 +176,9 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # ==========================================================
         # 5) PREENCHER NATUREZA
         # ==========================================================
-        log(f"Preenchendo natureza no campo COMP6087 com valor: {natureza[0]}")
-        print("Natureza:", natureza[0])
-        inserir_texto(driver, "COMP6087", natureza[0], enter=True, quantidade=3)
+        natureza = dados_nota['natureza']
+        print("Natureza:", natureza)
+        inserir_texto(driver, "COMP6087", natureza, enter=True, quantidade=3)
         time.sleep(2)
         log("Aguardou 2 segundos após preencher natureza.")
 
@@ -310,6 +347,12 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         print(tipo_nota)
         if tipo_nota == "CTE": 
             cadastro_informações_danfe(driver, chave_nota_fiscal,dados_nota )
+
+        if imposto: 
+            lancar_imposto(driver, caminho_nota_servidor, filial,)
+
+
+
         # ==========================================================
         # 9) SALVAR
         # ==========================================================
@@ -320,9 +363,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
         cancelar_lancamento_de_nota(driver)
 
-        time.sleep(5)
-        Scriptfind(driver, "wa-button",retorno=True )
-        time.sleep(5)
+
 
         try:
             host = driver.find_element(By.ID, "COMP7512")
