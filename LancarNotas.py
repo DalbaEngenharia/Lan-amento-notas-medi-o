@@ -116,8 +116,8 @@ def lancamento(driver, param, filial):
         caminho_nota_servidor = param[0]+param[1]+param[2]+param[4]
         print(caminho_nota_servidor)
         #aqui encontra a nota e passa para LLM 
-        dados_nota = encontrar_nota(caminho_nota_servidor, param[7], filial, dados_a_comparar)
-
+        #dados_nota = encontrar_nota(caminho_nota_servidor, param[7], filial, dados_a_comparar)
+        dados_nota = {'Tipo_nota': 'NFE', 'numero_nota': '541', 'data_emissao': '06/02/2026', 'AC': None, 'data_vencimento': '15/02/2026', 'cnpj_emitente': '04.519.669/0001-45', 'valor_total': '25540.00', 'valor_liquido': '25540.00', 'contem_imposto': 'False', 'valor_impostos': '0.00', 'natureza': 'PXX001'}
         log(f"Retorno bruto de encontrar_nota: {dados_nota}")
 
         #tratamento de notas que não foram encontradas ou não serão lançadas

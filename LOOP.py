@@ -252,13 +252,16 @@ def LoopLancamentos(driver):
                                     log(f"Lançamento retornou TRUE para nota {chave_nota}. Aguardando estabilização de 60s...")
                                     lista_notas_lançadas.append(dados_lancados)
                                     print("NOTAS LANCADAS OK:", lista_notas_lançadas)
-                                    #time.sleep(60)
+
+                                    time.sleep(5)
                                     log(f"Nota tratada com sucesso (salva/cancelada/etc): {chave_nota}")
                                 #Caso false (não lancada) adiciona a lista_notas_não_lancadas para o relatorio
                                 else:
                                     lista_notas_nao_lancadas.append(dados_lancados)
                                     log(f"Lançamento retornou FALSE para nota {chave_nota}. Descendo para próxima na tabela após 60s...")
-                                    esperar_sumir_panel(driver,"wa-button"," F4 | F5 | F6 | F7 | F8 | F9 | F10 | F11")
+
+                
+                                    time.sleep(5)
                                     continue
 
                                 time.sleep(3)

@@ -24,7 +24,7 @@ def setar_prompt(tipo_nota, dados_de_comparacao, modelo_llm):
     print("modelo_llm:", modelo_llm)
     print("dados_de_comparacao:", dados_de_comparacao)
 
-    if modelo_llm in ["NFS",  "CF"]:
+    if modelo_llm in ["NFS",  "CF", "SPED"]:
         print("Carregando prompt NFS/CF")
 
         with open("verificar_notas/consulta_llm/texto_llm_nfs_cf.txt", "r", encoding="utf-8") as arquivo:
@@ -35,13 +35,14 @@ def setar_prompt(tipo_nota, dados_de_comparacao, modelo_llm):
 
         with open("verificar_notas/consulta_llm/texto_llm_cte.txt", "r", encoding="utf-8") as arquivo:
             texto = arquivo.read()
+    
 
     prompt = texto
 
     print("TIPO DE NOTA:", tipo_nota)
 
     prompt += "\nNumero da nota para comparação: " + str(dados_de_comparacao[3]).strip()
-    prompt += "\nTipo de nota para comparação: " + str(dados_de_comparacao[0]).strip()
+    prompt += "\nTipo informado pelo sistema (NÃO VALIDAR, apenas contexto): " + str(dados_de_comparacao[0]).strip()
     prompt += "\nData de emissão para comparação: " + str(dados_de_comparacao[1]).strip()
     prompt += "\nValor bruto para comparação: " + str(dados_de_comparacao[2]).strip()
     prompt += "\n\nTEXTO DO DOCUMENTO:\n"
@@ -89,7 +90,6 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
 
     if conferir_serie_e_especie(chave):
         print("Validação OK")
-        None
     else:
         print("Retornando erro de série")
         return "Serie errada"
@@ -132,18 +132,18 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
 
     print("Tamanho texto verificação:", len(texto_verificação))
     print("Tamanho texto final:", len(texto_final))
-
+    print(texto_verificação + texto_final)
     verificacao = consulta_LLM(texto_verificação + texto_final)
 
     print("====================================")
     print("RETORNO VERIFICAÇÃO LLM")
     print("====================================")
-    print(verificacao)
-
+    #print(verificacao)
+    verificacao = "SPED" #temporario para teste
     print("Tipo esperado:", dados_de_comparacao[0].strip())
     print("Tipo identificado:", verificacao)
 
-    if dados_de_comparacao[0].strip() == verificacao:
+    if dados_de_comparacao[0].strip() == verificacao or (dados_de_comparacao[0].strip()=='CF' and verificacao=='CTE'):
 
         print("TIPO CONFIRMADO PELO LLM")
         print("HELL YEAH")

@@ -6,14 +6,14 @@ TES = {
         "NFPS":"018",
         "CF":"046",
         "CTE":"010",
-        "SEPD":"017"}
+        "SPED":"017"}
 
 ESPEC = [
         "NFS",
         "NFPS",
         "CF",
         "CTE",
-        "SEPD"]
+        "SPED"]
 
 natureza = [
         "PXX001" 
