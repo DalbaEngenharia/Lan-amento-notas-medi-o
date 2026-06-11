@@ -19,7 +19,7 @@ natureza = [
         "PXX001" 
         ,"PXX003"]
 
-impostos = [
+lista_de_impostos = [
     "IRRF Imposto de Renda",
     "ISS Imp. Serviço",
     "I.C.M.S",
