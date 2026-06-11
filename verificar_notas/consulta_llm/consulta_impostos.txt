@@ -22,27 +22,20 @@ Regras:
 "IRRF": "IRRF Imposto de Renda",
 "IRRF RETIDO": "IRRF Imposto de Renda",
 "IMPOSTO DE RENDA": "IRRF Imposto de Renda",
-
 "ISS": "ISS Imp. Serviço",
 "ISSQN": "ISS Imp. Serviço",
 "IMPOSTO SOBRE SERVIÇO": "ISS Imp. Serviço",
-
 "ICMS": "I.C.M.S",
 "IPI": "IPI",
 "ICMS RETIDO": "ICMS Retido",
-
 "INSS": "INSS",
 "INSS RETIDO": "INSS",
 "PREVIDENCIA SOCIAL": "INSS",
-
 "PIS": "PIS - Via Retenção",
 "PIS RETIDO": "PIS - Via Retenção",
-
 "COFINS": "COFINS - Via Retenção",
 "COFINS RETIDO": "COFINS - Via Retenção",
-
 "CSLL": "CSLL - Via Retenção",
-
 "CPRB": "CPRB",
 "CIDE": "CIDE",
 "SENAR": "SENAR",
@@ -63,16 +56,21 @@ Exemplos:
 * "R$ 10.500,50" → "10500,50"
 * "1.300,00" → "1300,00"
 
-Se um imposto não existir:
+Se um imposto não existir ou estiver zerado "0,00":
 
 * não incluir no JSON.
 
 Exemplo de saída:
 
 {
-"valor_bruto": "1300,00",
-"valor_liquido": "1271,40",
-"impostos_retidos": {
-"ISS Imp. Serviço": "28,60"
-}
+  "valor_bruto": "1534,00",
+  "valor_liquido": "1487,98",
+  "impostos": [
+      {
+        "tipo": "ISS Imp. Serviço",
+        "base": "1534,00",
+        "aliquota": "3,00",
+        "valor": "46,02"
+      }
+  ]
 }

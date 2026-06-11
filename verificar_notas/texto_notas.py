@@ -1,5 +1,4 @@
 from .consulta_llm.consulta_llm import consulta_LLM
-from .notas_cte import *
 from .consultar_notas.consultar_notas_pdf import consultar_notas_pdf_no_servidor
 from Listas.lista import ESPEC, TES
 import json

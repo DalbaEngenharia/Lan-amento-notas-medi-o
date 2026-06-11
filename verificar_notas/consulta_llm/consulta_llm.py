@@ -30,9 +30,7 @@ def consulta_LLM(texto):
 
             resposta_texto = getattr(response, "text", None)
             print(resposta_texto)
-            
-            # resposta_texto = '{"Tipo_nota":"CTE","numero_nota":"398","data_emissao":"02/02/2026","AC":null,"data_vencimento":"25/02/2026","cnpj_emitente":"27111626000121","valor_total":"18138.59","valor_liquido":"18138.59","contem_imposto":"False","valor_impostos":"0.00","natureza":"PXX001"}'
-           
+                     
             if not resposta_texto or not resposta_texto.strip():
                 log("[LLM] response.text veio vazio.")
                 raise Exception("response.text vazio")
