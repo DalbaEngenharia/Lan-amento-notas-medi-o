@@ -4,10 +4,11 @@ from verificar_notas.texto_notas import encontrar_nota
 import traceback
 from Lancamentos.relatorio import *
 from Lancamentos.lancamento_cte import *
-from Lancamentos.lancar_imposto import lancar_imposto 
+from Lancamentos.lancar_imposto import lancar_imposto
 def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal,caminho_nota_servidor, imposto=False ):
     try:
-    
+        
+        imposto = dados_nota['contem_imposto']
         print(dados_nota)
         tipo_nota = dados_nota["Tipo_nota"]        #se der tudo certo, inicia o lançamento da nota
 
