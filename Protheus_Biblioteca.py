@@ -434,7 +434,6 @@ def inserir_texto(driver, id, texto, shadow=False, enter=False, quantidade=1):
                 x = x + 1
 
 def inserir_na_tabela_shadow(driver, id_tabela, coluna_index, valor, linha_index=0, enter=False):
-    print("entrou para TES")
     script = """
     const callback = arguments[arguments.length - 1];
     const idGrid = arguments[0];
