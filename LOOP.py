@@ -248,7 +248,6 @@ def LoopLancamentos(driver):
                                 #se resultado for True (lancada) adiciona a lista_notas_lancadas para o relatorio
                                 if resultado:
                                     Scriptfind(driver,"wa-button",retorno=True)
-                                    esperar_sumir_panel(driver,"wa-button"," F4 | F5 | F6 | F7 | F8 | F9 | F10 | F11")
                                     log(f"Lançamento retornou TRUE para nota {chave_nota}. Aguardando estabilização de 60s...")
                                     lista_notas_lançadas.append(dados_lancados)
                                     print("NOTAS LANCADAS OK:", lista_notas_lançadas)

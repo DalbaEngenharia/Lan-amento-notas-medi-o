@@ -54,7 +54,7 @@ with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
 # CONFIG
 # =========================
 homologacao = False
-teste = 1
+teste = 0
 
 chrome_options = Options()
 
@@ -74,7 +74,7 @@ if not homologacao and teste == 0:
 
 elif not homologacao and teste == 1:
     chrome_options.add_argument("--start-maximized")
-    credenciais = ["gustavo.elicker", "gfe2026"]
+    credenciais = ["robo", "robo2025"]
 
 else:
     chrome_options.add_argument("--start-maximized")

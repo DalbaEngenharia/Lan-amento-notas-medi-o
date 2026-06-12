@@ -138,7 +138,6 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
     print("RETORNO VERIFICAÇÃO LLM")
     print("====================================")
     #print(verificacao)
-    verificacao = "SPED" #temporario para teste
     print("Tipo esperado:", dados_de_comparacao[0].strip())
     print("Tipo identificado:", verificacao)
 

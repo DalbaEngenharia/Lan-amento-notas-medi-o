@@ -8,7 +8,12 @@ from Lancamentos.lancar_imposto import lancar_imposto
 def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal,caminho_nota_servidor, imposto=False ):
     try:
         
-        imposto = dados_nota['contem_imposto']
+        
+        if dados_nota['contem_imposto'] == "True":
+            imposto = True
+        else: 
+            imposto = False
+
         print(dados_nota)
         tipo_nota = dados_nota["Tipo_nota"]        #se der tudo certo, inicia o lançamento da nota
 
@@ -359,10 +364,10 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        # esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        cancelar_lancamento_de_nota(driver)
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # cancelar_lancamento_de_nota(driver)
 
 
 
