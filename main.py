@@ -16,7 +16,7 @@ hoje = date.today()
 print("Hoje:", hoje)
 
 #verifica data retroativa
-if hoje.day == 1:
+if hoje.day == 0:
     print("iniciar com data retroativa")
     dia = hoje.day - 1
     mes = hoje.month - 1

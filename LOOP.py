@@ -57,7 +57,11 @@ def LoopLancamentos(driver):
                     funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
                 except Exception as e:
                     log(f"Popup Fechar 1 não encontrado ou falhou: {e}")
-
+                try:
+                    log("Tentando fechar popup 2...")
+                    funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
+                except Exception as e:
+                    log(f"Popup Fechar 2 não encontrado ou falhou: {e}")
             
                 ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
                 time.sleep(5)
