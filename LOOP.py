@@ -141,7 +141,6 @@ def LoopLancamentos(driver):
                         marcar_filtro(driver, filtros)
                         Filtro_bruto = False
                     else: 
-                        Scriptfind(driver, "wa-button")
                         funcao_tres_e_demais(driver, "wa-button", "Filtrar", 0)
                         funcao_tres_e_demais(driver, "wa-button", "Filtrar", 0)
                         funcao_tres_e_demais(driver, "wa-button", "Filtrar", 0)

@@ -9,7 +9,7 @@ NUNCA escreva texto antes ou depois do JSON.
 NUNCA invente informações.
 NUNCA crie campos adicionais.
 
-RETORNE SOMENTE ESTA ESTRUTURA:
+Retorne exclusivamente:
 
 {
 "valor_bruto": "",
@@ -17,7 +17,7 @@ RETORNE SOMENTE ESTA ESTRUTURA:
 "impostos": []
 }
 
-É PROIBIDO retornar qualquer campo diferente de:
+É proibido retornar qualquer campo diferente de:
 
 * valor_bruto
 * valor_liquido
@@ -25,7 +25,7 @@ RETORNE SOMENTE ESTA ESTRUTURA:
 
 ---
 
-## EXTRAÇÃO DOS VALORES
+# EXTRAÇÃO DOS VALORES
 
 Extraia:
 
@@ -33,7 +33,7 @@ Extraia:
 2. valor_liquido
 3. impostos retidos encontrados
 
-Prioridade para identificar valor_bruto:
+## Prioridade para valor_bruto
 
 * Valor Total da Nota
 * Valor dos Serviços
@@ -42,7 +42,7 @@ Prioridade para identificar valor_bruto:
 * Valor da NF
 * Valor Documento
 
-Prioridade para identificar valor_liquido:
+## Prioridade para valor_liquido
 
 * Valor Líquido
 * Valor a Receber
@@ -50,15 +50,13 @@ Prioridade para identificar valor_liquido:
 * Valor Final
 * Valor Líquido da Nota
 
-Caso não encontre algum valor:
-
-Retorne:
+Caso algum valor não exista, retornar:
 
 ""
 
 ---
 
-## NORMALIZAÇÃO MONETÁRIA
+# NORMALIZAÇÃO MONETÁRIA
 
 Remover:
 
@@ -66,9 +64,7 @@ Remover:
 * espaços
 * separador de milhar "."
 
-Manter:
-
-* vírgula decimal ","
+Manter apenas a vírgula decimal.
 
 Exemplos:
 
@@ -80,15 +76,13 @@ R$ 10.500,50 → 10500,50
 
 ---
 
-## NORMALIZAÇÃO DE ALÍQUOTA
+# NORMALIZAÇÃO DA ALÍQUOTA
 
 Remover:
 
 * %
 
-Manter:
-
-* apenas número com vírgula
+Manter apenas o número.
 
 Exemplos:
 
@@ -100,222 +94,9 @@ Exemplos:
 
 ---
 
-## MAPEAMENTO OBRIGATÓRIO DOS IMPOSTOS
+# MAPEAMENTO OBRIGATÓRIO DOS IMPOSTOS
 
-O campo "tipo" DEVE conter EXCLUSIVAMENTE um dos valores abaixo.
-
-Lista permitida:
-
-[
-"IRRF Imposto de Renda",
-"ISS Imp. Serviço",
-"I.C.M.S",
-"IPI",
-"ICMS Retido",
-"INSS",
-"PIS - Via Retenção",
-"COFINS - Via Retenção",
-"CSLL - Via Retenção",
-"CPRB",
-"CIDE",
-"SENAR",
-"SEST/SENAT"
-]
-
-Mapeamento obrigatório:
-
-IR
-→ IRRF Imposto de Renda
-
-IRRF
-→ IRRF Imposto de Renda
-
-IRRF RETIDO
-→ IRRF Imposto de Renda
-
-IMPOSTO DE RENDA
-→ IRRF Imposto de Renda
-
-ISS
-→ ISS Imp. Serviço
-
-ISSQN
-→ ISS Imp. Serviço
-
-IMPOSTO SOBRE SERVIÇO
-→ ISS Imp. Serviço
-
-ICMS
-→ I.C.M.S
-
-IPI
-→ IPI
-
-ICMS RETIDO
-→ ICMS Retido
-
-INSS
-→ INSS
-
-INSS RETIDO
-→ INSS
-
-PREVIDENCIA SOCIAL
-→ INSS
-
-PIS
-→ PIS - Via Retenção
-
-PIS RETIDO
-→ PIS - Via Retenção
-
-COFINS
-→ COFINS - Via Retenção
-
-COFINS RETIDO
-→ COFINS - Via Retenção
-
-CSLL
-→ CSLL - Via Retenção
-
-CPRB
-→ CPRB
-
-CIDE
-→ CIDE
-
-SENAR
-→ SENAR
-
-SEST/SENAT
-→ SEST/SENAT
-
----
-
-## ALÍQUOTAS PADRÃO (FALLBACK)
-
-Quando a nota fiscal não informar a alíquota, utilizar:
-
-IRRF Imposto de Renda
-→ 1,50
-
-CSLL - Via Retenção
-→ 1,00
-
-COFINS - Via Retenção
-→ 3,00
-
-PIS - Via Retenção
-→ 0,65
-
-INSS
-→ 11,00
-
-Aplicar SOMENTE quando a alíquota não estiver presente.
-
-Se a alíquota estiver informada na nota, utilizar a da nota.
-
----
-
-## ESTRUTURA DOS IMPOSTOS
-
-Cada item deve possuir exatamente:
-
-{
-"tipo": "",
-"base": "",
-"aliquota": "",
-"valor": ""
-}
-
----
-
-## REGRAS DE CÁLCULO
-
-Se existir:
-
-* base
-* imposto identificado
-
-mas a alíquota estiver ausente:
-
-utilizar a alíquota padrão.
-
-Se existir:
-
-* base
-* alíquota
-
-mas não existir valor
-
-calcular:
-
-valor = base × alíquota ÷ 100
-
-Arredondar para 2 casas decimais.
-
-Exemplos:
-
-Base: 11105,90
-Alíquota: 1,50
-
-Valor:
-166,59
-
-Base: 11105,90
-Alíquota: 3,00
-
-Valor:
-333,18
-
-Base: 11105,90
-Alíquota: 0,65
-
-Valor:
-72,19
-
-Base: 11105,90
-Alíquota: 1,00
-
-Valor:
-111,06
-
----
-
-## REGRAS DE INCLUSÃO DOS IMPOSTOS
-
-Incluir apenas impostos efetivamente encontrados.
-
-Não incluir impostos ausentes.
-
-Não incluir impostos com:
-
-0
-
-0,00
-
-0.00
-
-Não incluir impostos sem valor.
-
-Se o imposto for identificado mas não possuir base:
-
-{
-"tipo": "...",
-"base": "",
-"aliquota": "...",
-"valor": "..."
-}
-
-é permitido.
-
----
-
-## REGRAS CRÍTICAS PARA O CAMPO TIPO
-
-O campo "tipo" NÃO pode conter o texto original da nota.
-
-O campo "tipo" DEVE conter SOMENTE um destes valores:
+O campo "tipo" deve conter EXCLUSIVAMENTE um dos seguintes valores:
 
 * IRRF Imposto de Renda
 * ISS Imp. Serviço
@@ -331,67 +112,382 @@ O campo "tipo" DEVE conter SOMENTE um destes valores:
 * SENAR
 * SEST/SENAT
 
-PROIBIDO retornar:
+Realizar obrigatoriamente os seguintes mapeamentos:
 
-* IR
-* IRRF
-* ISS
+IR
+IRRF
+IRRF Retido
+Imposto de Renda
+
+→ IRRF Imposto de Renda
+
+ISS
+ISS Retido
+ISS Retenção
+ISSRF
+Imposto sobre Serviço
+
+→ ISS Imp. Serviço
+
+ICMS
+
+→ I.C.M.S
+
+ICMS Retido
+
+→ ICMS Retido
+
+IPI
+
+→ IPI
+
+INSS
+INSS Retido
+Previdência Social
+
+→ INSS
+
+PIS
+PIS Retido
+
+→ PIS - Via Retenção
+
+COFINS
+COFINS Retido
+
+→ COFINS - Via Retenção
+
+CSLL
+
+→ CSLL - Via Retenção
+
+CPRB
+
+→ CPRB
+
+CIDE
+
+→ CIDE
+
+SENAR
+
+→ SENAR
+
+SEST/SENAT
+
+→ SEST/SENAT
+
+Qualquer imposto sem mapeamento válido deve ser descartado.
+---
+
+# VALIDAÇÃO DO ISS (RETENÇÃO)
+
+O ISS somente deve ser incluído no array "impostos" quando houver evidência de retenção.
+
+## REGRA 1 - RETENÇÃO EXPLÍCITA (PRIORIDADE MÁXIMA)
+
+Se a nota apresentar qualquer indicação explícita de retenção do ISS, incluir normalmente o imposto.
+
+São exemplos de retenção explícita:
+
+* ISS Retido
+* ISS Retenção
+* ISSRF
+* Valor do ISS Retido
+* Imposto Retido ISS
+* ISS recolhido pelo tomador
+* ISS Retido na Fonte
+* qualquer outra descrição que indique claramente retenção
+
+Nestes casos, mapear obrigatoriamente para:
+
+"ISS Imp. Serviço"
+
+## REGRA 2 - QUANDO EXISTIR APENAS ISSQN
+
+Se a nota apresentar somente informações como:
+
 * ISSQN
-* ICMS
-* PIS
-* COFINS
-* CSLL
-* INSS RETIDO
-* IMPOSTO DE RENDA
+* Valor ISSQN
+* ISS Devido
+* ISS Calculado
+* ISS Próprio
+* Base de Cálculo do ISS
+* Alíquota do ISS
 
-ou qualquer outro valor fora da lista permitida.
+e não houver qualquer indicação explícita de retenção, aplicar a validação abaixo.
+
+### Passo 1
+
+Se existirem Valor Bruto e Valor Líquido, calcular:
+
+Diferença = Valor Bruto − Valor Líquido
+
+Caso um desses valores não exista, não inferir retenção do ISS.
+
+### Passo 2
+
+Somar todos os impostos retidos identificados, EXCETO o ISS.
+
+Exemplo:
+
+IRRF +
+INSS +
+PIS +
+COFINS +
+CSLL +
+ICMS Retido +
+IPI +
+CPRB +
+CIDE +
+SENAR +
+SEST/SENAT
+
+### Passo 3
+
+Se:
+
+Soma dos demais impostos = Diferença
+
+(com tolerância máxima de R$ 0,01)
+
+considerar que o ISS NÃO foi retido.
+
+Não adicioná-lo ao array.
+
+### Passo 4
+
+Caso a soma acima não feche a diferença, verificar se existe valor do ISSQN.
+
+Calcular:
+
+SomaComISS = Soma dos demais impostos + Valor do ISS
+
+Se:
+
+SomaComISS = Diferença
+
+(com tolerância máxima de R$ 0,01)
+
+considerar que o ISS foi retido.
+
+Adicionar:
+
+{
+"tipo":"ISS Imp. Serviço",
+"base":"",
+"aliquota":"",
+"valor":""
+}
+
+utilizando base, alíquota e valor encontrados na nota.
+
+### Passo 5
+
+Se nenhuma condição anterior for satisfeita, considerar que não há evidência suficiente de retenção.
+
+Não incluir o ISS.
+
+## REGRAS IMPORTANTES
+
+* A indicação textual de retenção sempre prevalece sobre qualquer cálculo.
+* Nunca incluir ISS apenas porque existe um campo ISSQN.
+* Nunca incluir ISS apenas porque existe diferença entre Valor Bruto e Valor Líquido.
+* A diferença pode ser composta por outros impostos retidos.
+* O ISS somente poderá ser inferido quando sua inclusão for necessária para que a soma dos impostos seja igual à diferença entre Valor Bruto e Valor Líquido.
+* Utilizar tolerância máxima de R$ 0,01.
+* Se não existir valor do ISS, não inferir retenção.
+* Nunca mapear ISSQN diretamente para "ISS Imp. Serviço".
+* Caso a soma dos demais impostos já explique integralmente a diferença entre Valor Bruto e Valor Líquido, ignorar completamente o ISSQN.
+* Em caso de dúvida, não incluir o ISS.
+# ALÍQUOTAS PADRÃO (FALLBACK)
+
+Utilizar apenas quando a alíquota NÃO estiver informada na nota:
+
+* IRRF Imposto de Renda → 1,50
+* CSLL - Via Retenção → 1,00
+* COFINS - Via Retenção → 3,00
+* PIS - Via Retenção → 0,65
+* INSS → 11,00
+
+Se a alíquota estiver presente na nota, sempre priorizar a alíquota informada.
 
 ---
 
-## VALIDAÇÃO FINAL OBRIGATÓRIA
+# ESTRUTURA DOS IMPOSTOS
 
-Antes de gerar a resposta:
+Cada item do array "impostos" deve seguir exatamente:
 
-1. Retornar apenas JSON válido.
+{
+"tipo": "",
+"base": "",
+"aliquota": "",
+"valor": ""
+}
 
-2. Não retornar markdown.
+Não adicionar nenhum outro campo.
 
-3. Não retornar explicações.
+---
 
-4. Não retornar texto fora do JSON.
+# REGRAS DE CÁLCULO
 
-5. Não criar campos adicionais.
+## Cálculo de valor do imposto
 
-6. Garantir que existam apenas:
+Se existir:
+
+* base
+* alíquota
+
+e o valor NÃO estiver presente:
+
+Calcular:
+
+valor = base × alíquota ÷ 100
+
+Arredondar para 2 casas decimais.
+
+---
+
+## Exemplos
+
+Base: 11105,90
+Alíquota: 1,50
+Valor: 166,59
+
+Base: 11105,90
+Alíquota: 3,00
+Valor: 333,18
+
+Base: 11105,90
+Alíquota: 0,65
+Valor: 72,19
+
+Base: 11105,90
+Alíquota: 1,00
+Valor: 111,06
+
+---
+
+# REGRAS DE INCLUSÃO DOS IMPOSTOS
+
+* Incluir apenas impostos efetivamente encontrados no texto da nota.
+* Não incluir impostos ausentes.
+* Não incluir impostos com valor 0, 0,00 ou equivalente.
+* Não inventar impostos.
+
+## Caso especial: base ausente
+
+Se o imposto existir, mas não tiver base:
+
+{
+"tipo": "...",
+"base": "",
+"aliquota": "...",
+"valor": "..."
+}
+
+é permitido.
+
+---
+
+# REGRAS DE PADRONIZAÇÃO FINAL
+
+* "tipo" deve sempre ser convertido para um dos tipos permitidos.
+* Nunca usar o texto original da nota em "tipo".
+* Se não houver mapeamento válido, descartar o imposto.
+* Nunca incluir impostos fora da lista oficial.
+# VALIDAÇÃO FINAL OBRIGATÓRIA
+
+Antes de retornar o JSON:
+
+* Garantir que a saída contém APENAS:
+
+  * valor_bruto
+  * valor_liquido
+  * impostos
+
+* Não adicionar nenhum outro campo.
+
+* Não retornar texto fora do JSON.
+
+* Não usar markdown.
+
+* Não incluir explicações.
+
+---
+
+# REGRAS DE CONSISTÊNCIA
+
+## 1. Impostos válidos
+
+* Todos os impostos devem estar mapeados para a lista permitida.
+* Qualquer imposto fora da lista deve ser descartado.
+
+Lista permitida:
+
+* IRRF Imposto de Renda
+* ISS Imp. Serviço
+* I.C.M.S
+* IPI
+* ICMS Retido
+* INSS
+* PIS - Via Retenção
+* COFINS - Via Retenção
+* CSLL - Via Retenção
+* CPRB
+* CIDE
+* SENAR
+* SEST/SENAT
+
+---
+
+## 2. Impostos zerados
+
+Não incluir impostos com:
+
+* 0
+* 0,00
+* 0.00
+
+---
+
+## 3. Regras de consistência monetária
+
+* Manter sempre o padrão com vírgula decimal.
+* Nunca converter para ponto.
+* Nunca alterar valores já informados corretamente.
+
+---
+
+## 4. Fluxo obrigatório de execução
+
+Executar sempre nesta ordem:
+
+1. Extrair valor_bruto e valor_liquido
+2. Extrair impostos brutos da nota
+3. Normalizar nomes dos impostos
+4. Aplicar regras de fallback de alíquota
+5. Calcular valores faltantes
+6. Aplicar validação do ISS
+7. Remover impostos inválidos ou zerados
+8. Montar JSON final
+
+---
+
+## 5. Regra de ouro
+
+* Nunca inferir dados sem base textual clara (exceto regras explícitas de cálculo).
+* Em caso de dúvida, não incluir o imposto.
+* ISS só pode ser incluído seguindo estritamente a regra de retenção definida anteriormente.
+
+---
+
+# SAÍDA FINAL
+
+Retornar exclusivamente:
 
 {
 "valor_bruto": "",
 "valor_liquido": "",
 "impostos": []
 }
-
-7. Validar todos os impostos.
-
-8. Converter obrigatoriamente os nomes encontrados para os nomes padronizados.
-
-9. Se um imposto não possuir mapeamento válido, descartá-lo.
-
-10. Não retornar impostos com valor zerado.
-
-11. Garantir que todos os tipos pertençam exatamente a esta lista:
-
-[
-"IRRF Imposto de Renda",
-"ISS Imp. Serviço",
-"I.C.M.S",
-"IPI",
-"ICMS Retido",
-"INSS",
-"PIS - Via Retenção",
-"COFINS - Via Retenção",
-"CSLL - Via Retenção",
-"CPRB",
-"CIDE",
-"SENAR",
-"SEST/SENAT"
-]

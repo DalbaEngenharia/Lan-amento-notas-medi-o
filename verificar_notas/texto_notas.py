@@ -141,9 +141,12 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
     print("Tipo esperado:", dados_de_comparacao[0].strip())
     print("Tipo identificado:", verificacao)
 
-    if (dados_de_comparacao[0].strip() == verificacao) or (dados_de_comparacao[0].strip()=='CF' and verificacao=='CTE' or (dados_de_comparacao[0].strip()=='NFPS' and verificacao=='NFS') or (dados_de_comparacao[0].strip()=='NFS' and verificacao=='NFPS')
-    ):
-
+    if (
+        dados_de_comparacao[0].strip() == verificacao
+            or (dados_de_comparacao[0].strip() == 'CF' and verificacao == 'CTE')
+            or (dados_de_comparacao[0].strip() == 'NFPS' and verificacao == 'NFS')
+            or (dados_de_comparacao[0].strip() == 'NFS' and verificacao == 'NFPS')
+        ):
         print("TIPO CONFIRMADO PELO LLM")
         print("HELL YEAH")
 

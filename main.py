@@ -10,7 +10,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # NOVO (auto driver)
 from webdriver_manager.chrome import ChromeDriverManager
-
+senha = os.getenv("robo_password")
+print(senha)
+if not senha:
+    raise Exception("Variáveis de ambiente PROTHEUS_USER e PROTHEUS_PASS não encontradas.")
 hoje = date.today()
 
 print("Hoje:", hoje)
@@ -54,7 +57,7 @@ with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
 # CONFIG
 # =========================
 homologacao = False
-teste = 0
+teste = 1
 
 chrome_options = Options()
 
@@ -70,11 +73,11 @@ chrome_options.add_argument(f"--user-data-dir={profile_path}")
 if not homologacao and teste == 0:
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--window-size=1920,1080")
-    credenciais = ["robo", "robo2025"]
+    credenciais = ["robo", senha]
 
 elif not homologacao and teste == 1:
     chrome_options.add_argument("--start-maximized")
-    credenciais = ["robo", "robo2025"]
+    credenciais = ["robo", senha]
 
 else:
     chrome_options.add_argument("--start-maximized")
