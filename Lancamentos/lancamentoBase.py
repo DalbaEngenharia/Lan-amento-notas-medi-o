@@ -8,7 +8,12 @@ from Lancamentos.lancar_imposto import lancar_imposto
 def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal,caminho_nota_servidor, imposto=False ):
     try:
         
-        imposto = dados_nota['contem_imposto']
+        
+        if dados_nota['contem_imposto'] == "True":
+            imposto = True
+        else: 
+            imposto = False
+
         print(dados_nota)
         tipo_nota = dados_nota["Tipo_nota"]        #se der tudo certo, inicia o lançamento da nota
 
@@ -347,7 +352,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
             )
         print(tipo_nota)
         if tipo_nota == "CTE": 
-            cadastro_informações_danfe(driver, chave_nota_fiscal,dados_nota )
+            cadastro_informações_danfe(driver, dados_nota )
 
         if imposto: 
             lancar_imposto(driver, caminho_nota_servidor, filial,)
@@ -359,24 +364,217 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # ==========================================================
         log("Iniciando salvamento do lançamento...")
 
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        # esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
-        # funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
-        cancelar_lancamento_de_nota(driver)
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
+        funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        # cancelar_lancamento_de_nota(driver)
 
 
+        time.sleep(5)
+############################################
+############################################
+############################################
+        wait = WebDriverWait(driver, 20)
 
+        host = wait.until(
+            EC.presence_of_element_located((By.ID, "COMP7512"))
+        )
+
+        # Obtém o shadowRoot
+        shadow = driver.execute_script(
+            "return arguments[0].shadowRoot",
+            host
+        )
+
+        btn = shadow.find_element(By.CSS_SELECTOR, "button")
+
+        # ====================================================
+        # TESTE 1 - click() no host
+        # ====================================================
         try:
-            host = driver.find_element(By.ID, "COMP7512")
+            print("Teste 1")
+            host.click()
+            time.sleep(1)
+        except Exception as e:
+            print(e)
 
-            shadow_root = driver.execute_script(
-                "return arguments[0].shadowRoot", host
-            )
-            btn = shadow_root.find_element(By.CSS_SELECTOR, "button")
+        # ====================================================
+        # TESTE 2 - JS click no host
+        # ====================================================
+        try:
+            print("Teste 2")
+            driver.execute_script("arguments[0].click();", host)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
 
+        # ====================================================
+        # TESTE 3 - dispatchEvent no host
+        # ====================================================
+        try:
+            print("Teste 3")
+            driver.execute_script("""
+                arguments[0].dispatchEvent(new MouseEvent('mouseover',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('mouseenter',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('mousemove',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('click',{bubbles:true}));
+            """, host)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 4 - click() no botão interno
+        # ====================================================
+        try:
+            print("Teste 4")
+            btn.click()
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 5 - JS click no botão interno
+        # ====================================================
+        try:
+            print("Teste 5")
             driver.execute_script("arguments[0].click();", btn)
-        except Exception:
-            pass
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 6 - dispatchEvent no botão
+        # ====================================================
+        try:
+            print("Teste 6")
+            driver.execute_script("""
+                arguments[0].dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
+                arguments[0].dispatchEvent(new PointerEvent('pointerup',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+                arguments[0].dispatchEvent(new MouseEvent('click',{bubbles:true}));
+            """, btn)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 7 - ActionChains
+        # ====================================================
+        try:
+            print("Teste 7")
+            ActionChains(driver)\
+                .move_to_element(btn)\
+                .click()\
+                .perform()
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 8 - ENTER
+        # ====================================================
+        try:
+            print("Teste 8")
+            btn.send_keys(Keys.ENTER)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 9 - SPACE
+        # ====================================================
+        try:
+            print("Teste 9")
+            btn.send_keys(Keys.SPACE)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 10 - ENTER no host
+        # ====================================================
+        try:
+            print("Teste 10")
+            host.send_keys(Keys.ENTER)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 11 - ENTER no body
+        # ====================================================
+        try:
+            print("Teste 11")
+            driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ENTER)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 12 - foco + clique
+        # ====================================================
+        try:
+            print("Teste 12")
+            driver.execute_script("arguments[0].focus();", btn)
+            driver.execute_script("arguments[0].click();", btn)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 13 - scroll + clique
+        # ====================================================
+        try:
+            print("Teste 13")
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center'});",
+                btn
+            )
+            btn.click()
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 14 - duplo clique
+        # ====================================================
+        try:
+            print("Teste 14")
+            ActionChains(driver)\
+                .move_to_element(btn)\
+                .double_click()\
+                .perform()
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+
+        # ====================================================
+        # TESTE 15 - eventos completos
+        # ====================================================
+        try:
+            print("Teste 15")
+            driver.execute_script("""
+                let e = arguments[0];
+
+                ['pointerover','mouseover','mouseenter',
+                'pointermove','mousemove',
+                'pointerdown','mousedown',
+                'focus',
+                'pointerup','mouseup',
+                'click'].forEach(function(type){
+                    e.dispatchEvent(new Event(type,{bubbles:true}));
+                });
+            """, btn)
+            time.sleep(1)
+        except Exception as e:
+            print(e)
+############################################
+############################################
+############################################
         print("DADOS NOTA LANÇADA:", dados_lancadas)
         log("Lançamento finalizado com retorno TRUE.")
         return montar_retorno_lancada(

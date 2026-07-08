@@ -57,7 +57,11 @@ def LoopLancamentos(driver):
                     funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
                 except Exception as e:
                     log(f"Popup Fechar 1 não encontrado ou falhou: {e}")
-
+                try:
+                    log("Tentando fechar popup 2...")
+                    funcao_tres_e_demais(driver, "wa-button", "Fechar", 0)
+                except Exception as e:
+                    log(f"Popup Fechar 2 não encontrado ou falhou: {e}")
             
                 ##=============================================================================================VERIFICAR LIMITE DE LICENÇA
                 time.sleep(5)
@@ -137,7 +141,6 @@ def LoopLancamentos(driver):
                         marcar_filtro(driver, filtros)
                         Filtro_bruto = False
                     else: 
-                        Scriptfind(driver, "wa-button")
                         funcao_tres_e_demais(driver, "wa-button", "Filtrar", 0)
                         funcao_tres_e_demais(driver, "wa-button", "Filtrar", 0)
                         funcao_tres_e_demais(driver, "wa-button", "Filtrar", 0)
@@ -248,7 +251,6 @@ def LoopLancamentos(driver):
                                 #se resultado for True (lancada) adiciona a lista_notas_lancadas para o relatorio
                                 if resultado:
                                     Scriptfind(driver,"wa-button",retorno=True)
-                                    esperar_sumir_panel(driver,"wa-button"," F4 | F5 | F6 | F7 | F8 | F9 | F10 | F11")
                                     log(f"Lançamento retornou TRUE para nota {chave_nota}. Aguardando estabilização de 60s...")
                                     lista_notas_lançadas.append(dados_lancados)
                                     print("NOTAS LANCADAS OK:", lista_notas_lançadas)

@@ -29,6 +29,7 @@ IMPORTANTE:
 CTE
 NFS
 CF
+nem um outro tipo
 - Sem frases
 - Sem pontuação
 - Sem explicações

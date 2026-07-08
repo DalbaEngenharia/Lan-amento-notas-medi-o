@@ -10,13 +10,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # NOVO (auto driver)
 from webdriver_manager.chrome import ChromeDriverManager
-
+senha = os.getenv("robo_password")
+print(senha)
+if not senha:
+    raise Exception("Variáveis de ambiente PROTHEUS_USER e PROTHEUS_PASS não encontradas.")
 hoje = date.today()
 
 print("Hoje:", hoje)
 
 #verifica data retroativa
-if hoje.day == 1:
+if hoje.day == 0:
     print("iniciar com data retroativa")
     dia = hoje.day - 1
     mes = hoje.month - 1
@@ -70,11 +73,11 @@ chrome_options.add_argument(f"--user-data-dir={profile_path}")
 if not homologacao and teste == 0:
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--window-size=1920,1080")
-    credenciais = ["robo", "robo2025"]
+    credenciais = ["robo", senha]
 
 elif not homologacao and teste == 1:
     chrome_options.add_argument("--start-maximized")
-    credenciais = ["gustavo.elicker", "gfe2026"]
+    credenciais = ["robo", senha]
 
 else:
     chrome_options.add_argument("--start-maximized")

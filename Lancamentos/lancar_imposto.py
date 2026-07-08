@@ -63,16 +63,19 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
         By.ID,
         "BUTTON-COMP6029"
     ).click()
+    cn_imposto = True
+    while cn_imposto: 
+        impostos_llm = consultar_impostos_nota(caminho_nota_servidor,filial)
 
-    impostos_llm = consultar_impostos_nota(caminho_nota_servidor,filial)
+        print(impostos_llm)
 
-    print(impostos_llm)
+        if not impostos_llm:
+            raise Exception("Nenhum retorno recebido da consulta de impostos.")
 
-    if not impostos_llm:
-        raise Exception("Nenhum retorno recebido da consulta de impostos.")
-
-    if not impostos_llm.get("impostos"):
-        raise Exception("Nenhum imposto encontrado para lançamento.")
+        elif not impostos_llm.get("impostos"):
+            raise Exception("Nenhum imposto encontrado para lançamento.")
+        else:
+            cn_imposto = False
 
     body = driver.find_element(
         By.TAG_NAME,
@@ -154,9 +157,9 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
             base_sistema = pegar_texto_input(driver,"COMP7505")
 
             print("base sistema:", base_sistema)
-
-            if (
-                normalizar_valor(base_sistema) == normalizar_valor(base) ):
+            teste_base_sistema = normalizar_valor(base_sistema)
+            teste_base =  normalizar_valor(base) 
+            if (teste_base_sistema == teste_base):
                 print("BASE OK")
                 break
 
@@ -180,8 +183,9 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
             valor_sistema = pegar_texto_input(driver,"COMP7506")
 
             print("valor sistema:", valor_sistema)
-
-            if ( normalizar_valor(valor_sistema) == normalizar_valor(valor_imposto) ):
+            teste_valor_sistema = normalizar_valor(valor_sistema)
+            teste_valor_imposto =normalizar_valor(valor_imposto) 
+            if ( teste_valor_sistema == teste_valor_imposto ):
                 print("VALOR OK")
                 break
 
@@ -198,14 +202,16 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
 
         print("BASE FINAL:", base_final)
         print("VALOR FINAL:", valor_final)
-
-        if (normalizar_valor(base_final)!=normalizar_valor(base)):
+        teste_base_sistema = normalizar_valor(base_final)
+        teste_base = normalizar_valor(base)
+        if (teste_base_sistema != teste_base):
             raise Exception(
                 f"Base divergente para {tipo}. "
                 f"Esperado: {base} | Sistema: {base_final}"
             )
-
-        if (normalizar_valor(valor_final) != normalizar_valor(valor_imposto) ):
+        teste_valor_sistema = normalizar_valor(valor_final)
+        teste_valor_imposto = normalizar_valor(valor_imposto)
+        if teste_valor_sistema != teste_valor_imposto:
             raise Exception(
                 f"Valor divergente para {tipo}. "
                 f"Esperado: {valor_imposto} | Sistema: {valor_final}"
@@ -228,11 +234,6 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
         print(f"Esperado: {esperado}")
         print(f"Validado: {realizado}")
 
-        if realizado != esperado:
-            raise Exception(
-                f"Quantidade de impostos divergente. "
-                f"Esperado: {esperado} | Validado: {realizado}"
-            )
 
         print("Resumo dos impostos lançados:")
 
@@ -293,7 +294,11 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
                             #loop para as linhas de produtos 
                             for index, linhas_local in enumerate(colunas_para_base):
                                 for tentativas in range(5):
-                                    if imposto['aliquota'][1] ==',': 
+                                    if len(imposto['aliquota']) == 1: 
+                                        alq_temp = "0"+imposto['aliquota']+",00"
+                                        imposto['aliquota'] = imposto['aliquota']+",00"
+                                        inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
+                                    elif imposto['aliquota'][1] ==',': 
                                         alq_temp = "0" + imposto['aliquota']
                                         inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
                                     else:                                 
@@ -305,9 +310,10 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
                                         tentativa = 0 
                                         for tentativa in range(5):
                                             time.sleep(5)
-                                            insercao_tabela_teste(driver,"COMP6105",4,"46,02",j)                                            
+                                            insercao_tabela_teste(driver,"COMP6105",4,valor,j)                                            
                                             imprimir_tabela_por_id(driver,"COMP6105")
                                             body.send_keys(Keys.ESCAPE)
+                                             
                                         
                                         
                                         

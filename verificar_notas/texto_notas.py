@@ -138,12 +138,15 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
     print("RETORNO VERIFICAÇÃO LLM")
     print("====================================")
     #print(verificacao)
-    verificacao = "SPED" #temporario para teste
     print("Tipo esperado:", dados_de_comparacao[0].strip())
     print("Tipo identificado:", verificacao)
 
-    if dados_de_comparacao[0].strip() == verificacao or (dados_de_comparacao[0].strip()=='CF' and verificacao=='CTE'):
-
+    if (
+        dados_de_comparacao[0].strip() == verificacao
+            or (dados_de_comparacao[0].strip() == 'CF' and verificacao == 'CTE')
+            or (dados_de_comparacao[0].strip() == 'NFPS' and verificacao == 'NFS')
+            or (dados_de_comparacao[0].strip() == 'NFS' and verificacao == 'NFPS')
+        ):
         print("TIPO CONFIRMADO PELO LLM")
         print("HELL YEAH")
 
@@ -217,30 +220,14 @@ def consultar_impostos_nota(caminho_nota_servidor, filial):
     if pdfs_encontrados == 0:
         return None
 
-    prompt = f"""
-    Extraia os impostos retidos da nota abaixo.
+    with open(
+        "verificar_notas/consulta_llm/consulta_impostos.txt",
+        "r",
+        encoding="utf-8"
+    ) as arquivo_verifica:
+        prompt = arquivo_verifica.read()
 
-    Retorne SOMENTE JSON.
-
-    Formato:
-
-    {{
-        "valor_bruto": "",
-        "valor_liquido": "",
-        "valor_total_impostos": "",
-        "impostos": [
-            {{
-                "tipo": "",
-                "base": "",
-                "aliquota": "",
-                "valor": ""
-            }}
-        ]
-    }}
-
-    TEXTO:
-    {texto_final}
-    """
+    prompt += texto_final
 
     retorno = consulta_LLM(prompt)
 
@@ -250,5 +237,6 @@ def consultar_impostos_nota(caminho_nota_servidor, filial):
         .replace("```", "")
         .strip()
     )
+
 
     return json.loads(retorno)

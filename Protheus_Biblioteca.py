@@ -824,7 +824,11 @@ def cancelar_lancamento_de_nota(driver):
     funcao_tres_e_demais(driver, "wa-button", "Cancelar", 0)
     time.sleep(1)
     funcao_tres_e_demais(driver, "wa-button", "Não", 0)
-
+    time.sleep(1)
+    try: 
+        funcao_tres_e_demais(driver, "wa-button", "Não", 0)
+    except: 
+        None
     print("========================================")
     print("FIM LANCAMENTO")
 
