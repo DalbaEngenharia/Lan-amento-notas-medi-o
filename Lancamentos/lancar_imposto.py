@@ -4,7 +4,13 @@ from Listas.lista import lista_de_impostos
 from tabelas.tabelas_protheus import *
 from Lancamentos.mapeamento_impostos import mapa_impostos
 import time
+import unicodedata
 
+def normalizar_texto(texto):
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', texto.lower())
+        if unicodedata.category(c) != 'Mn'
+    )
 
 def normalizar_valor(valor):
 
@@ -122,8 +128,9 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
             raise Exception(
                 f"Imposto não encontrado na lista: {tipo}"
             )
-
-        indice_imposto = lista_de_impostos.index(tipo)
+        indice_imposto = lista_de_impostos.index(tipo)    
+        print("tipo: ", tipo,"--- Indice: ", indice_imposto)
+        
 
         # seleciona imposto
         driver.execute_script(f"""
@@ -248,13 +255,6 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
 
         funcao_tres_e_demais(driver,"wa-button","Salvar")
 
-        
-        # verificar aliquota na tabela: 
-            # se diferente da aliquita do imposto
-                #coloca nos itens direto do produto
-                #altera valor do imposto
-            # else
-                # coninue
 
         time.sleep(5)
         linhas = linhas_de_tabela(driver, "COMP6105")
@@ -262,69 +262,73 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
         imprimir_tabela_por_id(driver,"COMP6105")
         print("###########################")
         for j, linha in enumerate(colunas):
-
+            #ignora primeira linha que add imposta
             if j == 0:
                 continue
-            if j == i+1: 
-                codigo = linha[0].strip()
-                descricao = linha[1].strip()
-                base = linha[2].strip()
-                aliquota = linha[3].strip()
-                valor = linha[4].strip()
 
-                print(
-                    codigo,
-                    descricao,
-                    base,
-                    aliquota,
-                    valor
-                )
-                if aliquota != imposto['aliquota']:
-                    print("Aliquitas diferentes, ajustar")
-                    for coluna_mapeada in mapa_impostos: 
-                        if codigo in coluna_mapeada : 
-                            print("coluna_mapeada: ", coluna_mapeada,"--", mapa_impostos[coluna_mapeada])
-                        if codigo in coluna_mapeada and "Aliq" in coluna_mapeada:
-                            print("---->",mapa_impostos[coluna_mapeada],"<----")
-                            
-                            #autaliza a tabela
-                            linhas_para_base = linhas_de_tabela(driver,"COMP6022")
-                            colunas_para_base = colunas_da_tabela(driver,linhas_para_base)
-                            
-                            #loop para as linhas de produtos 
-                            for index, linhas_local in enumerate(colunas_para_base):
-                                for tentativas in range(5):
-                                    if len(imposto['aliquota']) == 1: 
-                                        alq_temp = "0"+imposto['aliquota']+",00"
-                                        imposto['aliquota'] = imposto['aliquota']+",00"
-                                        inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
-                                    elif imposto['aliquota'][1] ==',': 
-                                        alq_temp = "0" + imposto['aliquota']
-                                        inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
-                                    else:                                 
-                                        inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],imposto["aliquota"],index)
+            codigo = linha[0].strip()
+            descricao = linha[1].strip()
+            base = linha[2].strip()
+            aliquota = linha[3].strip()
+            valor = linha[4].strip()
 
-                                    linhas_para_base = linhas_de_tabela(driver,"COMP6022")
-                                    colunas_para_base = colunas_da_tabela(driver,linhas_para_base) 
-                                    if colunas_para_base[index][64] == imposto['aliquota']: 
-                                        tentativa = 0 
-                                        for tentativa in range(5):
-                                            time.sleep(5)
-                                            insercao_tabela_teste(driver,"COMP6105",4,valor,j)                                            
-                                            imprimir_tabela_por_id(driver,"COMP6105")
-                                            body.send_keys(Keys.ESCAPE)
-                                             
-                                        
-                                        
-                                        
-                                        break
-                                    else: 
-                                        continue
-                                        
+            print(
+                codigo,
+                descricao,
+                base,
+                aliquota,
+                valor
+            )
+            normal1 = normalizar_texto(descricao)
+            normal2 = normalizar_texto(imposto['tipo'])
+            if normal1 != normal2:
+                continue
+            if aliquota != imposto['aliquota']: 
+                print("Aliquitas diferentes, ajustar")
+                for coluna_mapeada in mapa_impostos: 
+                    if codigo in coluna_mapeada : 
+                        print("coluna_mapeada: ", coluna_mapeada,"--", mapa_impostos[coluna_mapeada])
+                    if codigo in coluna_mapeada and "Aliq" in coluna_mapeada:
+                        print("---->",mapa_impostos[coluna_mapeada],"<----")
+                        
+                        #autaliza a tabela
+                        linhas_para_base = linhas_de_tabela(driver,"COMP6022")
+                        colunas_para_base = colunas_da_tabela(driver,linhas_para_base)
+                        
+                        #loop para as linhas de produtos 
+                        for index, linhas_local in enumerate(colunas_para_base):
+                            for tentativas in range(5):
+                                if len(imposto['aliquota']) == 1: 
+                                    alq_temp = "0"+imposto['aliquota']+",00"
+                                    imposto['aliquota'] = imposto['aliquota']+",00"
+                                    inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
+                                elif imposto['aliquota'][1] ==',': 
+                                    alq_temp = "0" + imposto['aliquota']
+                                    inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
+                                else:                                 
+                                    inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],imposto["aliquota"],index)
+
+                                linhas_para_base = linhas_de_tabela(driver,"COMP6022")
+                                colunas_para_base = colunas_da_tabela(driver,linhas_para_base) 
+                                if colunas_para_base[index][64] == imposto['aliquota']: 
+                                    tentativa = 0 
+                                    for tentativa in range(5):
+                                        time.sleep(5)
+                                        insercao_tabela_teste(driver,"COMP6105",4,valor,j)                                            
+                                        imprimir_tabela_por_id(driver,"COMP6105")
+                                        body.send_keys(Keys.ESCAPE)
+                                            
+                                    
+                                    
+                                    
+                                    break
+                                else: 
+                                    continue
+                                    
                                 #criar função para mudar aliquota aqui
-                else: 
-                    print("ALiquitas iguais")
-                    continue
+            else: 
+                print("ALiquitas iguais")
+                continue
         print("###########################")
         print("###########################")
         print("###########################")

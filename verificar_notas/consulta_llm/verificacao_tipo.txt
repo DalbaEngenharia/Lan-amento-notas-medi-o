@@ -33,4 +33,3 @@ nem um outro tipo
 - Sem frases
 - Sem pontuação
 - Sem explicações
->>>>>>> origin/notas_servidor

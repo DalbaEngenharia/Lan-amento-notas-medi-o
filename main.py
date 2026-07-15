@@ -7,13 +7,13 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-
-# NOVO (auto driver)
 from webdriver_manager.chrome import ChromeDriverManager
-senha = os.getenv("robo_password")
+import keyring
+
+#keyring.set_password("Robo_User", "robo", "Abc123!@#")
+# NOVO (auto driver)
+senha = keyring.get_password("Robo_User", "robo")
 print(senha)
-if not senha:
-    raise Exception("Variáveis de ambiente PROTHEUS_USER e PROTHEUS_PASS não encontradas.")
 hoje = date.today()
 
 print("Hoje:", hoje)
@@ -50,8 +50,8 @@ else:
 os.chdir(base_dir)
 
 # DEBUG (pode remover depois)
-with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
-    f.write(f"Rodando em: {os.getcwd()}")
+# with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
+#     f.write(f"Rodando em: {os.getcwd()}")
 
 # =========================
 # CONFIG

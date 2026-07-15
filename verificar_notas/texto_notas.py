@@ -110,20 +110,14 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
     if pdfs_encontrados == 0:
         print("Nenhum PDF encontrado dentro da pasta da nota.")
 
-        return {
-            "erro": "True",
-            "motivo": "Não foi encontrado nem um PDF"
-        }
+        return {"erro": "True","motivo": "Não foi encontrado nem um PDF"}
 
     if not texto_final.strip():
 
         print("Nenhum texto foi extraído dos PDFs.")
         print("OBS: Isso geralmente significa que o PDF é escaneado (imagem) e não texto.")
 
-        return {
-            "erro": "True",
-            "motivo": "Não foi possível ler o PDF"
-        }
+        return {"erro": "True","motivo": "Não foi possível ler o PDF"}
 
     print("####################################")
     print("PROMPT ENVIADO AO LLM")
@@ -131,13 +125,13 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
 
     print("Tamanho texto verificação:", len(texto_verificação))
     print("Tamanho texto final:", len(texto_final))
-    print(texto_verificação + texto_final)
+    print(texto_verificação ,"====================\n", texto_final)
     verificacao = consulta_LLM(texto_verificação + texto_final)
 
     print("====================================")
     print("RETORNO VERIFICAÇÃO LLM")
     print("====================================")
-    #print(verificacao)
+    print(verificacao)
     print("Tipo esperado:", dados_de_comparacao[0].strip())
     print("Tipo identificado:", verificacao)
 

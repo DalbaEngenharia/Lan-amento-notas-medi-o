@@ -79,7 +79,7 @@ def consultar_banco(filial):
                 writer.writerow(linha)
 
         print(f"Filial {filial}: {len(resultados)} registros salvos")
-
+    
         return len(resultados)
     except Exception as e:
         print("Erro:", e)

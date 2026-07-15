@@ -2,8 +2,14 @@ import os
 import time
 import google.genai as genai
 from Protheus_Biblioteca import log
+import sys
 
 def consulta_LLM(texto):
+
+    print("Python:", sys.executable)
+    print("Diretório:", os.getcwd())
+    print("GEMINI:", os.getenv("GEMINI_API_KEY"))
+
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
@@ -11,7 +17,6 @@ def consulta_LLM(texto):
         return None
 
     client = genai.Client(api_key=api_key)
-
     tentativa = 0
 
     while True:
