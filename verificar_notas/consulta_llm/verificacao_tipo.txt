@@ -21,8 +21,9 @@ Retorne: CTE
 - NFSE
 Retorne: NFS
 
-3. Caso não seja nenhum dos anteriores, ou seja uma FATURA de qualquer tipo:
+3. Caso não seja nenhum dos anteriores, ou seja uma FATURA, ou RECIBO DE LOCAÇÃO de qualquer tipo:
 Retorne: CF
+
 
 IMPORTANTE:
 - Retorne SOMENTE:

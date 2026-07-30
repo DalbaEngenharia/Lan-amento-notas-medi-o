@@ -49,8 +49,8 @@ def LoopLancamentos(driver):
                 funcao_tres_e_demais(driver, "wa-button", "Confirmar", 0)
 
                 # TELA DE FINANCEIRO
-                log("Aguardando tela de financeiro...")
-                esperar_existir(driver, "wa-button", "Fechar")
+                # log("Aguardando tela de financeiro...")
+                # esperar_existir(driver, "wa-button", "Fechar")
 
                 try:
                     log("Tentando fechar popup 1...")
@@ -250,7 +250,7 @@ def LoopLancamentos(driver):
                                 resultado, dados_lancados = lancamento(driver, dados, filial_atual)
                                 #se resultado for True (lancada) adiciona a lista_notas_lancadas para o relatorio
                                 if resultado:
-                                    Scriptfind(driver,"wa-button",retorno=True)
+                                    #Scriptfind(driver,"wa-button",retorno=True)
                                     log(f"Lançamento retornou TRUE para nota {chave_nota}. Aguardando estabilização de 60s...")
                                     lista_notas_lançadas.append(dados_lancados)
                                     print("NOTAS LANCADAS OK:", lista_notas_lançadas)

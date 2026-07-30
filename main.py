@@ -10,10 +10,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 import keyring
 
-#keyring.set_password("Robo_User", "robo", "Abc123!@#")
+# keyring.set_password("Robo_User", "robo", "Abc123!@#")
 # NOVO (auto driver)
 senha = keyring.get_password("Robo_User", "robo")
-print(senha)
 hoje = date.today()
 
 print("Hoje:", hoje)
@@ -52,7 +51,7 @@ os.chdir(base_dir)
 # DEBUG (pode remover depois)
 # with open(os.path.join(base_dir, "debug_path.txt"), "w") as f:
 #     f.write(f"Rodando em: {os.getcwd()}")
-
+#
 # =========================
 # CONFIG
 # =========================
