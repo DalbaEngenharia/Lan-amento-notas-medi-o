@@ -167,7 +167,7 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
         print("Recebido:", verificacao)
         return {
                 "erro": True,
-                "motivo": "Espécie de documento divergente da nota para o sistema"
+                "motivo": f"Espécie de documento divergente da nota({verificacao}) para o sistema({ dados_de_comparacao[0].strip()})"
                 }
     
     if dados_json is None:
