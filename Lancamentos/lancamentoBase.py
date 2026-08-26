@@ -18,6 +18,8 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         print("tipo_nota: ", tipo_nota)        
         if tipo_nota =="AF": 
             tipo_nota == "CF"
+        if dados_nota['Tipo_nota'] == "CTE":
+            tipo_nota = dados_nota['Tipo_nota']
         tes = TES[tipo_nota]
         log(f"TES final definida para lançamento: {tes}")
         print("TES final:", tes)
