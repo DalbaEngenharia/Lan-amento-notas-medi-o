@@ -5,6 +5,7 @@ import traceback
 from Lancamentos.relatorio import *
 from Lancamentos.lancamento_cte import *
 from Lancamentos.lancar_imposto import lancar_imposto
+from Lancamentos.ajuste_centavo import ajusta_centavo
 def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar, chave_nota_fiscal,caminho_nota_servidor, imposto=False ):
     try:
         
@@ -21,7 +22,8 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         tes = TES[tipo_nota]
         log(f"TES final definida para lançamento: {tes}")
         print("TES final:", tes)
-
+        if "diferenca_centavo"in dados_nota:
+            ajusta_centavo(driver, dados_nota["diferenca_centavo"])
         # ==========================================================
         # 3) PREENCHER TABELA 1 (COMP6022) -> COLUNA 7 = TES
         # ==========================================================
