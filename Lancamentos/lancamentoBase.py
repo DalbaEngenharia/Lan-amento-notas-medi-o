@@ -18,6 +18,8 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         print("tipo_nota: ", tipo_nota)        
         if tipo_nota =="AF": 
             tipo_nota == "CF"
+        if dados_nota['Tipo_nota'] == "CTE":
+            tipo_nota = dados_nota['Tipo_nota']
         tes = TES[tipo_nota]
         log(f"TES final definida para lançamento: {tes}")
         print("TES final:", tes)
@@ -96,6 +98,12 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                 tabela = driver.find_element(By.ID, "COMP6022")
                 tabela_2 = expand_shadow(driver, tabela)
                 linhas = tabela_2.find_elements(By.CSS_SELECTOR, "tbody tr")
+                Scriptfind(driver,"wa-button")
+                try:
+                    for _ in range(0, 6):
+                        funcao_tres_e_demais(driver,"wa-button","Fechar")
+                except: 
+                    pass
                 inserir_texto(driver, "COMP6019", tipo_nota, enter=True)
 
                 if x >= len(linhas):
@@ -175,6 +183,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # ==========================================================
         # 4) AVANÇAR PARA PRÓXIMA ETAPA
         # ==========================================================
+        time.sleep(5)
         log("Clicando botão BUTTON-COMP6030 para avançar de etapa...")
         print("Clicando botão BUTTON-COMP6030...")
         driver.find_element(By.ID, "BUTTON-COMP6030").click()
@@ -185,6 +194,8 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         # 5) PREENCHER NATUREZA
         # ==========================================================
         natureza = dados_nota['natureza']
+        if natureza is None:
+            natureza = "PXX001"
         print("Natureza:", natureza)
         inserir_texto(driver, "COMP6087", natureza, enter=True, quantidade=3)
         time.sleep(2)
