@@ -18,21 +18,34 @@ hoje = date.today()
 print("Hoje:", hoje)
 
 #verifica data retroativa
-if hoje.day == 0:
+from datetime import date
+import calendar
+
+if hoje.day == 1 or hoje.day == 2:
+    hoje.day = 1
     print("iniciar com data retroativa")
-    dia = hoje.day - 1
+
     mes = hoje.month - 1
     ano = hoje.year
-    # se janeiro, volta para dezembro do ano anterior
+
+    # Se janeiro, volta para dezembro do ano anterior
     if mes == 0:
         mes = 12
         ano -= 1
+
+    # Último dia do mês anterior
+    dia = calendar.monthrange(ano, mes)[1]
+
     nova_data = date(ano, mes, dia)
+
     print("Mês anterior:", nova_data)
     print("Mês anterior ajustado:", nova_data.strftime("%d%m%Y"))
-    DataRetroativa =  nova_data.strftime("%d%m%Y")
-    print("Data retroativa: ", DataRetroativa)
+
+    DataRetroativa = nova_data.strftime("%d%m%Y")
+    print("Data retroativa:", DataRetroativa)
+
     DataRetroativaBool = True
+
 else:
     DataRetroativaBool = None
     DataRetroativa = None
@@ -56,7 +69,7 @@ os.chdir(base_dir)
 # CONFIG
 # =========================
 homologacao = False
-teste = 1
+teste = 0
 
 chrome_options = Options()
 

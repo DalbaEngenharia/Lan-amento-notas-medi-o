@@ -1,6 +1,6 @@
 from Protheus_Biblioteca import *
 from verificar_notas.texto_notas import consultar_impostos_nota
-from Listas.lista import lista_de_impostos
+from Listas.lista import lista_de_impostos, verificar_imposto, DicImpostos
 from tabelas.tabelas_protheus import *
 from Lancamentos.mapeamento_impostos import mapa_impostos
 import time
@@ -279,12 +279,13 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
                 aliquota,
                 valor
             )
-            normal1 = normalizar_texto(descricao)
+            normal1 = normalizar_texto(codigo)
             normal2 = normalizar_texto(imposto['tipo'])
-            if normal1 != normal2:
+            if DicImpostos[imposto["tipo"]] != codigo:
                 continue
             if aliquota != imposto['aliquota']: 
                 print("Aliquitas diferentes, ajustar")
+
                 for coluna_mapeada in mapa_impostos: 
                     if codigo in coluna_mapeada : 
                         print("coluna_mapeada: ", coluna_mapeada,"--", mapa_impostos[coluna_mapeada])
@@ -298,33 +299,391 @@ def lancar_imposto(driver, caminho_nota_servidor, filial):
                         #loop para as linhas de produtos 
                         for index, linhas_local in enumerate(colunas_para_base):
                             for tentativas in range(5):
+                                valor_original_linha =  colunas_para_base[index][65]
+                                print(valor_original_linha)
+                                valor_original_linha = valor_original_linha.replace(".","")
                                 if len(imposto['aliquota']) == 1: 
                                     alq_temp = "0"+imposto['aliquota']+",00"
                                     imposto['aliquota'] = imposto['aliquota']+",00"
+                        
                                     inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
+                                    # inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada]+1,valor_original_linha,index)
                                 elif imposto['aliquota'][1] ==',': 
                                     alq_temp = "0" + imposto['aliquota']
                                     inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],alq_temp,index)
+                                    # inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada]+1,valor_original_linha,index)
+
                                 else:                                 
                                     inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada],imposto["aliquota"],index)
+                                    # inserir_na_tabela_shadow(driver,"COMP6022",mapa_impostos[coluna_mapeada]+1,valor_original_linha,index,enter=True)
+                                script = r"""
+                                    const callback = arguments[arguments.length - 1];
 
+                                    const valor = String(arguments[0]);
+                                    const rowId = String(arguments[1]);
+                                    const colId = String(arguments[2]);
+
+                                    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+
+                                    // ============================================================
+                                    // PROCURA RECURSIVA NOS SHADOW DOMs
+                                    // ============================================================
+
+                                    function findDeep(root, predicate) {
+
+                                        if (!root) {
+                                            return null;
+                                        }
+
+                                        if (
+                                            root.nodeType === Node.ELEMENT_NODE &&
+                                            predicate(root)
+                                        ) {
+                                            return root;
+                                        }
+
+                                        for (const child of root.children || []) {
+
+                                            const found = findDeep(child, predicate);
+
+                                            if (found) {
+                                                return found;
+                                            }
+                                        }
+
+                                        if (root.shadowRoot) {
+
+                                            const found = findDeep(root.shadowRoot, predicate);
+
+                                            if (found) {
+                                                return found;
+                                            }
+                                        }
+
+                                        return null;
+                                    }
+
+
+                                    (async () => {
+
+                                        try {
+
+                                            // ========================================================
+                                            // GRID
+                                            // ========================================================
+
+                                            const grid = document.querySelector("#COMP6022");
+
+                                            if (!grid) {
+
+                                                callback({
+                                                    ok: false,
+                                                    erro: "COMP6022 não encontrada"
+                                                });
+
+                                                return;
+                                            }
+
+
+                                            if (!grid.shadowRoot) {
+
+                                                callback({
+                                                    ok: false,
+                                                    erro: "COMP6022 sem shadowRoot"
+                                                });
+
+                                                return;
+                                            }
+
+
+                                            // ========================================================
+                                            // CÉLULA
+                                            // ========================================================
+
+                                            const selector =
+                                                `tr[id="${rowId}"] td[id="${colId}"]`;
+
+                                            const cell =
+                                                grid.shadowRoot.querySelector(selector);
+
+
+                                            if (!cell) {
+
+                                                callback({
+                                                    ok: false,
+                                                    erro: "Célula não encontrada",
+
+                                                    rowId: rowId,
+                                                    colId: colId,
+                                                    selector: selector
+                                                });
+
+                                                return;
+                                            }
+
+
+                                            console.log(
+                                                "Célula:",
+                                                cell.id,
+                                                cell.innerText
+                                            );
+
+
+                                            // ========================================================
+                                            // ABRE A CÉLULA
+                                            // ========================================================
+
+                                            cell.dispatchEvent(new MouseEvent("mousedown", {
+                                                bubbles: true,
+                                                composed: true
+                                            }));
+
+                                            await sleep(100);
+
+
+                                            cell.dispatchEvent(new MouseEvent("mouseup", {
+                                                bubbles: true,
+                                                composed: true
+                                            }));
+
+                                            await sleep(100);
+
+
+                                            cell.dispatchEvent(new MouseEvent("click", {
+                                                bubbles: true,
+                                                composed: true
+                                            }));
+
+                                            await sleep(400);
+
+
+                                            // ========================================================
+                                            // ENTER
+                                            // ========================================================
+
+                                            cell.dispatchEvent(new KeyboardEvent("keydown", {
+                                                key: "Enter",
+                                                code: "Enter",
+                                                keyCode: 13,
+                                                which: 13,
+                                                bubbles: true,
+                                                composed: true
+                                            }));
+
+
+                                            await sleep(1000);
+
+
+                                            // ========================================================
+                                            // PROCURA EDITOR COM FOCO
+                                            // ========================================================
+
+                                            let editor = null;
+
+
+                                            for (let tentativa = 0; tentativa < 20; tentativa++) {
+
+                                                editor = findDeep(
+                                                    document.documentElement,
+                                                    el => {
+
+                                                        return (
+                                                            el.tagName === "WA-TEXT-INPUT" &&
+                                                            el.classList.contains("focus")
+                                                        );
+                                                    }
+                                                );
+
+
+                                                if (editor) {
+                                                    break;
+                                                }
+
+
+                                                await sleep(250);
+                                            }
+
+
+                                            // ========================================================
+                                            // EDITOR NÃO ENCONTRADO
+                                            // ========================================================
+
+                                            if (!editor) {
+
+                                                callback({
+                                                    ok: false,
+                                                    erro: "WA-TEXT-INPUT com focus não encontrado",
+                                                    rowId: rowId,
+                                                    colId: colId
+                                                });
+
+                                                return;
+                                            }
+
+
+                                            console.log("EDITOR:", editor);
+                                            console.log("NAME:", editor.getAttribute("name"));
+                                            console.log("VALUE ANTES:", editor.value);
+                                            console.log("BUFFER ANTES:", editor.bufferValues);
+
+
+                                            // ========================================================
+                                            // LIMPA BUFFER
+                                            // ========================================================
+
+                                            editor.resetBuffer();
+
+                                            await sleep(100);
+
+
+                                            // ========================================================
+                                            // DIGITA O VALOR
+                                            // ========================================================
+
+                                            for (const ch of valor) {
+
+                                                editor.insertKey(ch);
+
+                                                await sleep(30);
+                                            }
+
+
+                                            await sleep(100);
+
+
+                                            // ========================================================
+                                            // ESCREVE BUFFER
+                                            // ========================================================
+
+                                            editor.writeBuffer();
+
+                                            await sleep(200);
+
+
+                                            console.log("VALUE DEPOIS:", editor.value);
+                                            console.log("BUFFER DEPOIS:", editor.bufferValues);
+
+
+                                            // ========================================================
+                                            // CHANGE
+                                            // ========================================================
+
+                                            editor.dispatchEvent(
+                                                new Event("change", {
+                                                    bubbles: true,
+                                                    composed: true
+                                                })
+                                            );
+
+
+                                            await sleep(200);
+
+
+                                            // ========================================================
+                                            // COMMIT
+                                            // ========================================================
+
+                                            editor.dispatchEvent(
+                                                new KeyboardEvent("keydown", {
+                                                    key: "Enter",
+                                                    code: "Enter",
+                                                    keyCode: 13,
+                                                    which: 13,
+                                                    bubbles: true,
+                                                    composed: true
+                                                })
+                                            );
+
+
+                                            await sleep(100);
+
+
+                                            editor.dispatchEvent(
+                                                new KeyboardEvent("keyup", {
+                                                    key: "Enter",
+                                                    code: "Enter",
+                                                    keyCode: 13,
+                                                    which: 13,
+                                                    bubbles: true,
+                                                    composed: true
+                                                })
+                                            );
+
+
+                                            await sleep(500);
+
+
+                                            // ========================================================
+                                            // RETORNO
+                                            // ========================================================
+
+                                            callback({
+
+                                                ok: true,
+
+                                                rowId: rowId,
+
+                                                colId: colId,
+
+                                                valorSolicitado: valor,
+
+                                                celulaAntes: cell.innerText,
+
+                                                editor: {
+
+                                                    id: editor.id,
+
+                                                    name: editor.getAttribute("name"),
+
+                                                    ownerId: editor.ownerId,
+
+                                                    value: editor.value,
+
+                                                    bufferValues: editor.bufferValues,
+
+                                                    className: editor.className
+                                                }
+                                            });
+
+
+                                        }
+                                        catch (e) {
+
+                                            callback({
+                                                ok: false,
+                                                erro: e.stack || e.message || String(e)
+                                            });
+                                        }
+
+                                    })();
+                                    """
+
+
+                                resultado = driver.execute_async_script(
+                                    script,
+                                    str(valor_original_linha),
+                                    str(index),
+                                    str(mapa_impostos[coluna_mapeada] + 1)
+                                )
+
+                                print(resultado)                               
                                 linhas_para_base = linhas_de_tabela(driver,"COMP6022")
-                                colunas_para_base = colunas_da_tabela(driver,linhas_para_base) 
+                                colunas_para_base = colunas_da_tabela(driver,linhas_para_base)
                                 if colunas_para_base[index][64] == imposto['aliquota']: 
-                                    tentativa = 0 
-                                    for tentativa in range(5):
-                                        time.sleep(5)
+                                    for _ in range(0,5):
+                                        time.sleep(0.3)
                                         insercao_tabela_teste(driver,"COMP6105",4,valor,j)                                            
                                         imprimir_tabela_por_id(driver,"COMP6105")
                                         body.send_keys(Keys.ESCAPE)
-                                            
+                                                
                                     
                                     
                                     
                                     break
                                 else: 
                                     continue
-                                    
+                        break
                                 #criar função para mudar aliquota aqui
             else: 
                 print("ALiquitas iguais")

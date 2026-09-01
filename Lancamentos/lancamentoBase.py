@@ -21,6 +21,11 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
             tipo_nota == "CF"
         if dados_nota['Tipo_nota'] == "CTE":
             tipo_nota = dados_nota['Tipo_nota']
+        if dados_nota['Tipo_nota'] == "NFS" and imposto == True:
+            tipo_nota = "NFPS"    
+        if tipo_nota == "NFS" and dados_nota["Tipo_nota"] == "NFPS": 
+            tipo_nota = "NFPS"
+        print(tipo_nota)
         tes = TES[tipo_nota]
         log(f"TES final definida para lançamento: {tes}")
         print("TES final:", tes)
@@ -103,6 +108,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
                 Scriptfind(driver,"wa-button")
                 try:
                     for _ in range(0, 6):
+                        time.sleep(0.3)
                         funcao_tres_e_demais(driver,"wa-button","Fechar")
                 except: 
                     pass
@@ -370,11 +376,9 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
             cadastro_informações_danfe(driver, dados_nota )
 
         if imposto: 
-            #lancar_imposto(driver, caminho_nota_servidor, filial,)
-            cancelar_lancamento_de_nota(driver)
-            return montar_retorno_nao_lancada(
-                dados_lancadas, filial, fornecedor, dados_a_comparar, "Nota com imposto (função em ajuste)"
-            )
+            lancar_imposto(driver, caminho_nota_servidor, filial,)
+            # cancelar_lancamento_de_nota(driver)
+            # return montar_retorno_nao_lancada(dados_lancadas, filial, fornecedor, dados_a_comparar, "Nota com imposto (função em ajuste)")
  
 
 
