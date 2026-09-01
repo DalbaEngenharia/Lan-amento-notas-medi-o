@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_UP
 import time
 
 from Protheus_Biblioteca import *
@@ -14,10 +14,11 @@ def _decimal_br(valor):
     Converte valores brasileiros para Decimal.
 
     Exemplos:
-        "120,00"        -> Decimal("120.00")
-        "1.200,00"      -> Decimal("1200.00")
-        "120,0100000"   -> Decimal("120.0100000")
-        "120.01"        -> Decimal("120.01")
+        "120,00"          -> Decimal("120.00")
+        "1.200,00"        -> Decimal("1200.00")
+        "120,0100000"     -> Decimal("120.0100000")
+        "120.01"          -> Decimal("120.01")
+        "1.065,20058981"  -> Decimal("1065.20058981")
     """
 
     valor = str(valor).strip()
@@ -36,10 +37,13 @@ def _decimal_para_br_7(valor):
     """
     Decimal -> formato brasileiro com 7 casas.
 
-    Decimal("120.01")
+    Exemplo:
+        Decimal("120.01")
         ->
-    "120,0100000"
+        "120,0100000"
     """
+
+    valor = valor.quantize(Decimal("0.0000001"),rounding=ROUND_UP)
 
     return f"{valor:.7f}".replace(".", ",")
 
@@ -72,10 +76,12 @@ def inserir_na_tabela_shadow_teste_local(driver, valor):
             // ==================================================
 
             if (!grid || !grid.shadowRoot) {
+
                 callback({
                     ok: false,
                     erro: "Grid COMP6022 não encontrada"
                 });
+
                 return;
             }
 
@@ -89,10 +95,12 @@ def inserir_na_tabela_shadow_teste_local(driver, valor):
             );
 
             if (!cell) {
+
                 callback({
                     ok: false,
                     erro: "Célula COMP6022 / linha 0 / coluna 5 não encontrada"
                 });
+
                 return;
             }
 
@@ -178,9 +186,7 @@ def inserir_na_tabela_shadow_teste_local(driver, valor):
 
                 callback({
                     ok: false,
-                    erro:
-                        "Editor incorreto: " +
-                        editor.getAttribute("name")
+                    erro: "Editor incorreto: " + editor.getAttribute("name")
                 });
 
                 return;
@@ -320,9 +326,7 @@ def inserir_na_tabela_shadow_teste_local(driver, valor):
     )
 
     if not resultado or not resultado.get("ok"):
-        raise Exception(
-            f"Erro ao inserir no unitário: {resultado}"
-        )
+        raise Exception(f"Erro ao inserir no unitário: {resultado}")
 
     return resultado
 
@@ -330,10 +334,15 @@ def inserir_na_tabela_shadow_teste_local(driver, valor):
 # ============================================================
 # AJUSTA CENTAVO
 #
+# coluna 4 = QUANTIDADE
 # coluna 5 = UNITÁRIO
 # coluna 6 = TOTAL
 #
-# O cálculo é feito SEMPRE sobre a coluna 5.
+# O cálculo é:
+#
+# TOTAL NOVO / QUANTIDADE = UNITÁRIO NOVO
+#
+# O unitário é arredondado para 7 casas SEMPRE PARA CIMA.
 # ============================================================
 
 def ajusta_centavo(driver, sentido):
@@ -344,23 +353,46 @@ def ajusta_centavo(driver, sentido):
 
 
     # ========================================================
-    # LÊ UNITÁRIO ATUAL
+    # LÊ TABELA ATUAL
     # ========================================================
 
-    linhas = linhas_de_tabela(
-        driver,
-        "COMP6022"
-    )
+    linhas = linhas_de_tabela(driver,"COMP6022")
 
-    colunas = colunas_da_tabela(
-        driver,
-        linhas
-    )
+    colunas = colunas_da_tabela(driver,linhas)
 
     print("TABELA ATUAL:")
 
     for i, linha in enumerate(colunas):
         print(i, linha)
+
+
+    # ========================================================
+    # SEGURANÇA
+    # ========================================================
+
+    if not colunas:
+        raise Exception(
+            "Nenhuma linha encontrada na tabela COMP6022."
+        )
+
+    if len(colunas[0]) < 7:
+        raise Exception(
+            f"A primeira linha possui apenas {len(colunas[0])} colunas. "
+            "São necessárias pelo menos 7 colunas."
+        )
+
+
+    # ========================================================
+    # COLUNA 4 = QUANTIDADE
+    # ========================================================
+
+    quantidade_str = str(
+        colunas[0][4]
+    ).strip()
+
+    quantidade = _decimal_br(
+        quantidade_str
+    )
 
 
     # ========================================================
@@ -378,9 +410,6 @@ def ajusta_centavo(driver, sentido):
 
     # ========================================================
     # COLUNA 6 = TOTAL
-    #
-    # Apenas para diagnóstico.
-    # NÃO usamos para calcular o unitário.
     # ========================================================
 
     valor_total_str = str(
@@ -397,6 +426,16 @@ def ajusta_centavo(driver, sentido):
     print("================================")
 
     print(
+        "QUANTIDADE RAW:",
+        repr(quantidade_str)
+    )
+
+    print(
+        "QUANTIDADE:",
+        quantidade
+    )
+
+    print(
         "UNITÁRIO:",
         valor_unitario_atual
     )
@@ -408,22 +447,27 @@ def ajusta_centavo(driver, sentido):
 
 
     # ========================================================
-    # CALCULA NOVO UNITÁRIO
+    # VALIDA QUANTIDADE
+    # ========================================================
+
+    if quantidade == 0:
+        raise ValueError(
+            f"Quantidade não pode ser zero. "
+            f"Valor recebido: {quantidade_str!r}"
+        )
+
+
+    # ========================================================
+    # CALCULA NOVO TOTAL
     # ========================================================
 
     if sentido == "abaixo":
 
-        valor_unitario_novo = (
-            valor_unitario_atual
-            + Decimal("0.01")
-        )
+        valor_total_novo = valor_total_atual - Decimal("0.01")
 
     elif sentido == "acima":
 
-        valor_unitario_novo = (
-            valor_unitario_atual
-            - Decimal("0.01")
-        )
+        valor_total_novo = valor_total_atual + Decimal("0.01")
 
     else:
 
@@ -432,34 +476,73 @@ def ajusta_centavo(driver, sentido):
         )
 
 
+    # ========================================================
+    # CALCULA NOVO UNITÁRIO
+    #
+    # SEMPRE ARREDONDA PARA CIMA
+    # PARA 7 CASAS DECIMAIS
+    # ========================================================
+
+    valor_unitario_novo = (valor_total_novo / quantidade).quantize(Decimal("0.0000001"), rounding=ROUND_UP)
+
+
+    # ========================================================
+    # CONVERTE PARA FORMATO DO PROTHEUS
+    # ========================================================
+
     valor_novo_str = _decimal_para_br_7(
         valor_unitario_novo
     )
 
 
     print("================================")
-    print("NOVO UNITÁRIO")
+    print("CÁLCULO DO AJUSTE")
     print("================================")
 
     print(
-        "Atual:",
+        "Sentido:",
+        sentido
+    )
+
+    print(
+        "Quantidade:",
+        quantidade
+    )
+
+    print(
+        "Total atual:",
+        valor_total_atual
+    )
+
+    print(
+        "Total novo:",
+        valor_total_novo
+    )
+
+    print(
+        "Unitário atual:",
         valor_unitario_atual
     )
 
     print(
-        "Novo:",
+        "Unitário calculado:",
+        valor_total_novo / quantidade
+    )
+
+    print(
+        "Unitário novo arredondado:",
         valor_unitario_novo
     )
 
     print(
-        "String:",
+        "String para Protheus:",
         valor_novo_str
     )
 
 
     # ========================================================
     # INSERE EXATAMENTE NO UNITÁRIO
-    # COMP6022 / 0 / 5
+    # COMP6022 / LINHA 0 / COLUNA 5
     # ========================================================
 
     resultado = inserir_na_tabela_shadow_teste_local(
@@ -497,6 +580,18 @@ def ajusta_centavo(driver, sentido):
     )
 
 
+    if not colunas:
+        raise Exception(
+            "Nenhuma linha encontrada na tabela após a alteração."
+        )
+
+    if len(colunas[0]) < 7:
+        raise Exception(
+            f"A primeira linha possui apenas {len(colunas[0])} colunas após "
+            "a alteração."
+        )
+
+
     # ========================================================
     # NOVO UNITÁRIO
     # ========================================================
@@ -528,8 +623,18 @@ def ajusta_centavo(driver, sentido):
     print("================================")
 
     print(
+        "QUANTIDADE:",
+        quantidade
+    )
+
+    print(
         "UNITÁRIO ANTES:",
         valor_unitario_atual
+    )
+
+    print(
+        "UNITÁRIO CALCULADO:",
+        valor_total_novo / quantidade
     )
 
     print(
@@ -540,6 +645,16 @@ def ajusta_centavo(driver, sentido):
     print(
         "UNITÁRIO DEPOIS:",
         novo_unitario
+    )
+
+    print(
+        "TOTAL ANTES:",
+        valor_total_atual
+    )
+
+    print(
+        "TOTAL SOLICITADO:",
+        valor_total_novo
     )
 
     print(
@@ -568,6 +683,7 @@ def ajusta_centavo(driver, sentido):
 
     return {
         "ok": True,
+        "quantidade": str(quantidade),
         "unitario_anterior": str(valor_unitario_atual),
         "unitario_novo": str(novo_unitario),
         "total_anterior": str(valor_total_atual),

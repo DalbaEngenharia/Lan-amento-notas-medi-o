@@ -193,13 +193,12 @@ def lancamento(driver, param, filial):
             log("Nota contém imposto. Cancelando lançamento.")
             print("Tem imposto")
 
-            cancelar_lancamento_de_nota(driver)
-            #lancamento = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7],caminho_nota_servidor, imposto=True)
+           
+            lancamento = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7],caminho_nota_servidor, imposto=True)
             print("TESTE LANCAMENTO IMPOSTO: ", lancamento) 
-            
-            return montar_retorno_nao_lancada(
-                 dados_lancadas, filial, fornecedor, dados_a_comparar[3], "NOTA CONTÉM IMPOSTO"
-            )
+            return lancamento
+            # cancelar_lancamento_de_nota(driver) 
+            # return montar_retorno_nao_lancada(dados_lancadas, filial, fornecedor, dados_a_comparar[3], "Nota com imposto (função em ajuste)")
         else:
             teste = lancamentoBase.lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, fornecedor, dados_a_comparar[3], param[7], param)
             print (teste)

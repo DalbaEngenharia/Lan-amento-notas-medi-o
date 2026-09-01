@@ -261,7 +261,6 @@ def LoopLancamentos(driver):
                                 else:
                                     lista_notas_nao_lancadas.append(dados_lancados)
                                     log(f"Lançamento retornou FALSE para nota {chave_nota}. Descendo para próxima na tabela após 60s...")
-
                 
                                     time.sleep(5)
                                     continue
