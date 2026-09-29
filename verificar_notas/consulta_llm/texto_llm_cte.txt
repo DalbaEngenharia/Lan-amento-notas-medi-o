@@ -178,3 +178,16 @@ O JSON deve estar em uma única linha.
 Todos os campos obrigatórios devem existir.
 Utilize null quando necessário.
 Nunca inclua explicações adicionais.
+
+CONDICAO IMPORTANTE
+se tiver diferença de 0.01 centavo: 
+
+caso a nota for 1 centavo MAIOR que os dados de comparação, 
+continue mas adicione no JSON diferenca_centavo["acima"]
+
+caso a nota for 1 centavo MENOR que os dados de comparação, 
+continue mas adicione no JSON diferenca_centavo["abaixo"]
+
+se a nota conter 0.02 centavos de diferença para mais, acima 
+ou abaixo, retorne erro
+

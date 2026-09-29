@@ -21,35 +21,40 @@ print("Hoje:", hoje)
 from datetime import date
 import calendar
 
-if hoje.day == 1 or hoje.day == 2:
-    hoje.day = 1
-    print("iniciar com data retroativa")
+retorativa = False
+if retorativa == True: 
+    if hoje.day == 1 or hoje.day == 2:
+        print("iniciar com data retroativa")
 
-    mes = hoje.month - 1
-    ano = hoje.year
+        mes = hoje.month - 1
+        ano = hoje.year
 
-    # Se janeiro, volta para dezembro do ano anterior
-    if mes == 0:
-        mes = 12
-        ano -= 1
+        # Se janeiro, volta para dezembro do ano anterior
+        if mes == 0:
+            mes = 12
+            ano -= 1
 
-    # Último dia do mês anterior
-    dia = calendar.monthrange(ano, mes)[1]
+        # Último dia do mês anterior
+        dia = calendar.monthrange(ano, mes)[1]
 
-    nova_data = date(ano, mes, dia)
+        nova_data = date(ano, mes, dia)
 
-    print("Mês anterior:", nova_data)
-    print("Mês anterior ajustado:", nova_data.strftime("%d%m%Y"))
+        print("Mês anterior:", nova_data)
+        print("Mês anterior ajustado:", nova_data.strftime("%d%m%Y"))
 
-    DataRetroativa = nova_data.strftime("%d%m%Y")
-    print("Data retroativa:", DataRetroativa)
+        DataRetroativa = nova_data.strftime("%d%m%Y")
+        print("Data retroativa:", DataRetroativa)
 
-    DataRetroativaBool = True
+        DataRetroativaBool = True
 
+    else:
+        DataRetroativaBool = None
+        DataRetroativa = None
+        print("segue normal")
 else:
-    DataRetroativaBool = None
-    DataRetroativa = None
-    print("segue normal")
+        DataRetroativaBool = None
+        DataRetroativa = None
+        print("segue normal")
     
 # =========================
 # CORREÇÃO CRÍTICA (AGENDADOR)
