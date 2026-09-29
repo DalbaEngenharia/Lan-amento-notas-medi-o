@@ -6,10 +6,6 @@ import sys
 
 def consulta_LLM(texto):
 
-    print("Python:", sys.executable)
-    print("Diretório:", os.getcwd())
-    print("GEMINI:", os.getenv("GEMINI_API_KEY"))
-
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
