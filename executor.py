@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+from datetime import datetime
 
 # ============================================================
 # CONFIGURAÇÃO
@@ -30,17 +31,30 @@ print("=" * 60)
 
 while True:
 
+    # Verifica o horário atual
+    horario_atual = datetime.now().strftime("%H:%M")
+
+    # Se chegou às 19:00, encerra o loop
+    if horario_atual == "19:00":
+        print("Horário de encerramento atingido: 19:00")
+        print("SUPERVISOR FINALIZADO")
+        break
+
     print()
+
     print("=" * 60)
     print("INICIANDO ROBÔ")
     print("=" * 60)
 
     try:
-
         resultado = subprocess.run(
             [sys.executable, CAMINHO_ROBO],
             cwd=BASE_DIR
         )
+
+        from envio_relatorio_loop import enviar_ultimo_relatorio
+
+        enviar_ultimo_relatorio()
 
         print()
         print("ROBÔ FINALIZADO")
@@ -48,12 +62,7 @@ while True:
         print("INICIANDO NOVA EXECUÇÃO...")
 
     except Exception as erro:
-
         print()
         print("ERRO AO EXECUTAR O ROBÔ:")
         print(erro)
         print("TENTANDO NOVAMENTE...")
-
-
-# Não existe sleep aqui.
-# Quando o processo terminar, o while executa novamente.
