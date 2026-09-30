@@ -190,7 +190,7 @@ def consultar_notas_pdf_no_servidor(
 
         conn.close()
 
-        return 0, ""
+        return 0, "Erro na montagem do caminho, ->POSSIVEL<- erro de espécie de documento"
 
     texto_final = ""
 
