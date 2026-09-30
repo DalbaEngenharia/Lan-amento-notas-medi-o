@@ -109,8 +109,10 @@ def encontrar_nota(caminho_nota_servidor, chave, filial, dados_de_comparacao, te
 
     if pdfs_encontrados == 0:
         print("Nenhum PDF encontrado dentro da pasta da nota.")
-
-        return {f"erro": "True","motivo":texto_final}
+        if texto_final == "": 
+            return {f"erro": "True","motivo": 'Não foi encontrado nem um PDF'}
+        else: 
+            return {f"erro": "True","motivo":texto_final}
 
     if not texto_final.strip():
 
