@@ -333,5 +333,5 @@ def LoopLancamentos(driver):
         LoopFilial += 1
 
     log("===== FIM DO LOOP DE LANÇAMENTOS =====")
-    encerrar_sistema(driver)
+    # encerrar_sistema(driver)
 

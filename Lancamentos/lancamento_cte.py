@@ -50,6 +50,10 @@ def cadastro_informações_danfe(driver, json):
         print(texto_tipo_cte)
         print("tipo CTE OK")
     time.sleep(5)
+    try: 
+        funcao_tres_e_demais(driver,"wa-button","Fechar")
+    except: 
+        None
     script = """
     function deepQuery(selector, root = document) {
         const elements = [];
@@ -140,8 +144,12 @@ def cadastro_informações_danfe(driver, json):
             inserir_texto(driver, "COMP6196", json['uf_destino'],enter=True)
         time.sleep(1)
         if not mun_destino_site.strip():
-            inserir_texto(driver, "COMP6198", codigo_destinho)
-        None
+            inserir_texto(driver, "COMP6198", codigo_destinho,enter=True)
+        try: 
+            funcao_tres_e_demais(driver,"wa-button","Fechar")
+        except: 
+            None
 
     except Exception as e:
+
         print("ERRO REAL:", e)

@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-from datetime import datetime
+from datetime import datetime, time
 
 # ============================================================
 # CONFIGURAÇÃO
@@ -28,20 +28,18 @@ print("=" * 60)
 print("SUPERVISOR INICIADO")
 print(f"Arquivo: {CAMINHO_ROBO}")
 print("=" * 60)
-
 while True:
 
     # Verifica o horário atual
-    horario_atual = datetime.now().strftime("%H:%M")
+    horario_atual = datetime.now().time()
 
     # Se chegou às 19:00, encerra o loop
-    if horario_atual == "19:00":
+    if horario_atual >= time(19, 0):
         print("Horário de encerramento atingido: 19:00")
         print("SUPERVISOR FINALIZADO")
         break
 
     print()
-
     print("=" * 60)
     print("INICIANDO ROBÔ")
     print("=" * 60)
@@ -53,7 +51,6 @@ while True:
         )
 
         from envio_relatorio_loop import enviar_ultimo_relatorio
-
         enviar_ultimo_relatorio()
 
         print()

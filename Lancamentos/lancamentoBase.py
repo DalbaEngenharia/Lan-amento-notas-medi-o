@@ -374,7 +374,7 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         print(tipo_nota)
         if tipo_nota == "CTE": 
             cadastro_informações_danfe(driver, dados_nota )
-
+                     
         if imposto: 
             lancar_imposto(driver, caminho_nota_servidor, filial,)
             # cancelar_lancamento_de_nota(driver)
@@ -388,6 +388,12 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
         log("Iniciando salvamento do lançamento...")
 
         funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
+        if tipo_nota == "CTE":
+            time.sleep(5)
+            try: 
+                funcao_tres_e_demais(driver,"wa-button","Fechar")
+            except: 
+                pass
         esperar_existir(driver, "wa-dialog", "Título Contas a Pagar")
         funcao_tres_e_demais(driver, "wa-button", "Salvar", 0)
         # cancelar_lancamento_de_nota(driver)
