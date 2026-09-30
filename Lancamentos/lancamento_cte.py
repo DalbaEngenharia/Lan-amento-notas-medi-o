@@ -16,18 +16,18 @@ def cadastro_informações_danfe(driver, json):
     )
 
     # validar chave
-    chave_cadastrada = pegar_texto_input(driver, "COMP6148")
+    chave_cadastrada = pegar_texto_input(driver, "COMP6150")
     chave_nota =  json['chave_nota_fiscal']
     if chave_cadastrada != chave_nota:
         print("|", chave_cadastrada, "|")
         print("|",chave_nota, "|")
-        inserir_texto(driver, "COMP6148",chave_nota)
+        inserir_texto(driver, "COMP6150",chave_nota)
     else:
         log("Chave NOTA Ok.")
     time.sleep(1)
     # verificar CT-e
     driver.execute_script("""
-    const root = document.querySelector('#COMP6164').shadowRoot;
+    const root = document.querySelector('#COMP6166').shadowRoot;
 
     const select = root.querySelector('select');
 
@@ -50,7 +50,6 @@ def cadastro_informações_danfe(driver, json):
         print(texto_tipo_cte)
         print("tipo CTE OK")
     time.sleep(5)
-    funcao_tres_e_demais(driver,"wa-button","Fechar")
     script = """
     function deepQuery(selector, root = document) {
         const elements = [];
@@ -119,10 +118,12 @@ def cadastro_informações_danfe(driver, json):
         time.sleep(3)
         driver.execute_script(script)
         driver.find_element(By.ID, "BUTTON-COMP6036").click()
-        uf_origem_site = pegar_texto_input(driver,"COMP6189") 
-        uf_destino_site = pegar_texto_input(driver,"COMP6194") 
-        mun_origem_site = pegar_texto_input(driver,"COMP6191") 
-        mun_destino_site = pegar_texto_input(driver,"COMP6196") 
+        ########################################################
+        uf_origem_site = pegar_texto_input(driver,"COMP6191") 
+        uf_destino_site = pegar_texto_input(driver,"COMP6193") 
+        ########################################################
+        mun_origem_site = pegar_texto_input(driver,"COMP6196") 
+        mun_destino_site = pegar_texto_input(driver,"COMP6198") 
         print(uf_origem_site," - ",uf_destino_site," - ",mun_origem_site," - ",mun_destino_site) 
         
         codigo_origem = consultar_codigo_do_municipio(json['uf_origem'], json['municipio_origem'])
@@ -130,16 +131,16 @@ def cadastro_informações_danfe(driver, json):
         print("codigo_origem - ", codigo_origem, "codigo_destinho - ",codigo_destinho)
         
         if not uf_origem_site.strip():
-            inserir_texto(driver, "COMP6189", json['uf_origem'],enter=True)
+            inserir_texto(driver, "COMP6191", json['uf_origem'],enter=True)
         time.sleep(1)
         if not mun_origem_site.strip():
-            inserir_texto(driver, "COMP6191", codigo_origem)
+            inserir_texto(driver, "COMP6193", codigo_origem)
         time.sleep(1)
         if not uf_destino_site.strip():
-            inserir_texto(driver, "COMP6194", json['uf_destino'],enter=True)
+            inserir_texto(driver, "COMP6196", json['uf_destino'],enter=True)
         time.sleep(1)
         if not mun_destino_site.strip():
-            inserir_texto(driver, "COMP6196", codigo_destinho)
+            inserir_texto(driver, "COMP6198", codigo_destinho)
         None
 
     except Exception as e:
