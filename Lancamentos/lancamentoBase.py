@@ -373,7 +373,9 @@ def lancamento_base(driver, tipo_nota, dados_nota, dados_lancadas, filial, forne
             )
         print(tipo_nota)
         if tipo_nota == "CTE": 
-            cadastro_informações_danfe(driver, dados_nota )
+            if cadastro_informações_danfe(driver, dados_nota ) ==  "erro consulta de codigo": 
+                cancelar_lancamento_de_nota(driver)
+                return montar_retorno_nao_lancada(dados_lancadas, filial, fornecedor, dados_a_comparar, "erro consulta de codigo CTE")
                      
         if imposto: 
             lancar_imposto(driver, caminho_nota_servidor, filial,)

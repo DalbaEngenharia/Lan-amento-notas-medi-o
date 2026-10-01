@@ -133,7 +133,8 @@ def cadastro_informações_danfe(driver, json):
         codigo_origem = consultar_codigo_do_municipio(json['uf_origem'], json['municipio_origem'])
         codigo_destinho = consultar_codigo_do_municipio(json['uf_destino'], json['municipio_destino'])
         print("codigo_origem - ", codigo_origem, "codigo_destinho - ",codigo_destinho)
-        
+        if not codigo_destinho or not codigo_origem: 
+            return "erro consulta de codigo"
         if not uf_origem_site.strip():
             inserir_texto(driver, "COMP6191", json['uf_origem'],enter=True)
         time.sleep(1)

@@ -21,7 +21,7 @@ print("Hoje:", hoje)
 from datetime import date
 import calendar
 
-retorativa = False
+retorativa = True
 if retorativa == True: 
     if hoje.day == 1 or hoje.day == 2:
         print("iniciar com data retroativa")

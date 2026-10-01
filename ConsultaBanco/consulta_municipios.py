@@ -1,8 +1,8 @@
 import pyodbc
-from openpyxl import Workbook
 
-def consultar_codigo_do_municipio(uf ,municipio ):
-    # conexão
+
+def consultar_codigo_do_municipio(uf, municipio):
+
     conn = pyodbc.connect(
         "DRIVER={PostgreSQL ANSI(x64)};"
         "SERVER=192.168.254.212;"
@@ -14,33 +14,48 @@ def consultar_codigo_do_municipio(uf ,municipio ):
 
     cursor = conn.cursor()
 
-    uf = uf.upper()
-    municipio = municipio.upper()
+    uf = uf.strip().upper()
+    municipio = municipio.strip().upper()
 
-    sql = f"""
-    select cc2_est, cc2_codmun, cc2_mun
-    from cc2010 
-    where d_e_l_e_t_ = ''
-    and cc2_est = '{uf}'
-    and cc2_mun = '{municipio}'
-    and cc2_codmun <> ''
+    sql = """
+        SELECT cc2_est, cc2_codmun, cc2_mun
+        FROM cc2010
+        WHERE d_e_l_e_t_ = ''
+          AND TRIM(cc2_est) = ?
+          AND TRIM(cc2_mun) = ?
+          AND TRIM(cc2_codmun) <> ''
     """
 
-    # executa a consulta
-    cursor.execute(sql)
+    cursor.execute(sql, (uf, municipio))
 
-    # busca os resultados
     resultados = cursor.fetchall()
 
-    # imprime os resultados
-    for linha in resultados:
-        estado = linha[0].strip()
-        codigo = linha[1].strip()
-        municipio = linha[2].strip()
+    print(f"Consulta banco resultados: {resultados}")
 
-        print(estado, codigo, municipio)
+    if not resultados:
+        cursor.close()
+        conn.close()
 
-    # fecha conexão
+        print(
+            f"Nenhum município encontrado: "
+            f"UF={uf}, MUNICÍPIO={municipio}"
+        )
+
+        return None
+
+    linha = resultados[0]
+
+    estado = linha[0].strip()
+    codigo = linha[1].strip()
+    municipio_banco = linha[2].strip()
+
+    print(
+        f"Estado: {estado} | "
+        f"Código: {codigo} | "
+        f"Município: {municipio_banco}"
+    )
+
     cursor.close()
     conn.close()
+
     return codigo
