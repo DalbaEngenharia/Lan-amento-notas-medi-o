@@ -16,13 +16,20 @@ senha = keyring.get_password("Robo_User", "robo")
 hoje = date.today()
 
 print("Hoje:", hoje)
-
+# if hoje.day > 20: 
+#     sys.exit()
 #verifica data retroativa
 from datetime import date
 import calendar
 
-retorativa = True
-if retorativa == True: 
+import sys
+retroativa = False
+
+if len(sys.argv) > 1:
+    retroativa = sys.argv[1].lower() == "true"
+
+print("Retroativa:", retroativa)
+if retroativa == True: 
     if hoje.day == 1 or hoje.day == 2:
         print("iniciar com data retroativa")
 

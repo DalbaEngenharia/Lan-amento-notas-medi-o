@@ -28,6 +28,11 @@ print("=" * 60)
 print("SUPERVISOR INICIADO")
 print(f"Arquivo: {CAMINHO_ROBO}")
 print("=" * 60)
+
+retroativa = False
+if len(sys.argv) > 1:
+    retroativa = sys.argv[1].lower() == "true"
+
 while True:
 
     # Verifica o horário atual
@@ -43,23 +48,43 @@ while True:
     print("=" * 60)
     print("INICIANDO ROBÔ")
     print("=" * 60)
+    if retroativa: 
+        try:
+            resultado = subprocess.run(
+                [sys.executable, CAMINHO_ROBO,"True"],
+                cwd=BASE_DIR
+            )
 
-    try:
-        resultado = subprocess.run(
-            [sys.executable, CAMINHO_ROBO],
-            cwd=BASE_DIR
-        )
+            from envio_relatorio_loop import enviar_ultimo_relatorio
+            enviar_ultimo_relatorio()
 
-        from envio_relatorio_loop import enviar_ultimo_relatorio
-        enviar_ultimo_relatorio()
+            print()
+            print("ROBÔ FINALIZADO")
+            print(f"Código de saída: {resultado.returncode}")
+            print("INICIANDO NOVA EXECUÇÃO...")
 
-        print()
-        print("ROBÔ FINALIZADO")
-        print(f"Código de saída: {resultado.returncode}")
-        print("INICIANDO NOVA EXECUÇÃO...")
+        except Exception as erro:
+            print()
+            print("ERRO AO EXECUTAR O ROBÔ:")
+            print(erro)
+            print("TENTANDO NOVAMENTE...")
+    else:     
+        try:
+            resultado = subprocess.run(
+                [sys.executable, CAMINHO_ROBO],
+                cwd=BASE_DIR
+            )
 
-    except Exception as erro:
-        print()
-        print("ERRO AO EXECUTAR O ROBÔ:")
-        print(erro)
-        print("TENTANDO NOVAMENTE...")
+            from envio_relatorio_loop import enviar_ultimo_relatorio
+            enviar_ultimo_relatorio()
+
+            print()
+            print("ROBÔ FINALIZADO")
+            print(f"Código de saída: {resultado.returncode}")
+            print("INICIANDO NOVA EXECUÇÃO...")
+
+        except Exception as erro:
+            print()
+            print("ERRO AO EXECUTAR O ROBÔ:")
+            print(erro)
+            print("TENTANDO NOVAMENTE...")
