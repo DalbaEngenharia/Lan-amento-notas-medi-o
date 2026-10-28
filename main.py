@@ -16,7 +16,7 @@ senha = keyring.get_password("Robo_User", "robo")
 hoje = date.today()
 
 print("Hoje:", hoje)
-# if hoje.day > 20: 
+# if hoje.day < 20: 
 #     sys.exit()
 #verifica data retroativa
 from datetime import date

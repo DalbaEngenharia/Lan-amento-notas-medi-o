@@ -9,12 +9,12 @@ EMAIL_REMETENTE = "robo.dalba@gmail.com"
 
 EMAILS = [
     "gustavo.elicker@dalba.com.br",
-    "rfh@dalba.com.br",
-    "portal@dalba.com.br",
+    # "rfh@dalba.com.br",
+    # "portal@dalba.com.br",
     "alexssander.matos@dalba.com.br",
-    "francislene.amancio@dalba.com.br",
-    "rafael.iglesias@dalba.com.br",
-    "agner@dalba.com.br"
+    # "francislene.amancio@dalba.com.br",
+    # "rafael.iglesias@dalba.com.br",
+    # "agner@dalba.com.br"
 ]
 
 

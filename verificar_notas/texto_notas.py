@@ -8,7 +8,17 @@ print("====================================")
 print("INICIANDO ARQUIVO")
 print("====================================")
 
-with open("verificar_notas/consulta_llm/verificacao_tipo.txt", "r", encoding="utf-8") as arquivo_verifica:
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+CAMINHO_VERIFICACAO = os.path.join(
+    BASE_DIR,
+    "consulta_llm",
+    "verificacao_tipo.txt"
+)
+
+with open(CAMINHO_VERIFICACAO, "r", encoding="utf-8") as arquivo_verifica:
     texto_verificação = arquivo_verifica.read()
 
 print("Arquivo verificacao_tipo.txt carregado")
